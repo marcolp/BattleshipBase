@@ -4,12 +4,10 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.os.Build;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewTreeObserver;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,9 +15,13 @@ import java.util.List;
 /**
  * A special view class to display a battleship board as a2D grid.
  *
+ * This is the view class in MVC
  * @see Board
  */
 public class BoardView extends View {
+
+    private TextView shots;
+
 
     /** Callback interface to listen for board touches. */
     public interface BoardTouchListener {
@@ -44,6 +46,22 @@ public class BoardView extends View {
     private final Paint boardPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     {
         boardPaint.setColor(boardColor);
+    }
+
+    /** Shot color*/
+    private final int shotColor = Color.rgb(0, 25, 255);
+
+    /**Shot paint*/
+    private final Paint shotPaint = new Paint(Paint.ANTI_ALIAS_FLAG);{
+        shotPaint.setColor(shotColor);
+    }
+
+    /** Ship color*/
+    private final int shipColor = Color.rgb(255, 25, 0);
+
+    /**Ship paint*/
+    private final Paint shipPaint = new Paint(Paint.ANTI_ALIAS_FLAG);{
+        shipPaint.setColor(shipColor);
     }
 
     /** Board grid line color. */
@@ -77,6 +95,23 @@ public class BoardView extends View {
         super(context, attrs, defStyleAttr);
     }
 
+
+
+    /**
+     * Assign the text view from the activity
+     * or some other view that can see R.id.numShots
+     * in order to be able to update it. Return true
+     * if it was successfully assigned, false otherwise.
+     *
+     * @param shotTextView
+     * @return
+     */
+    public boolean setShotsTextView(TextView shotTextView){
+        this.shots = shotTextView;
+        if(this.shots == null) return false;
+        else return true;
+    }
+
     /** Set the board to to be displayed by this view. */
     public void setBoard(Board board) {
         this.board = board;
@@ -97,6 +132,11 @@ public class BoardView extends View {
                 int xy = locatePlace(event.getX(), event.getY());
                 if (xy >= 0) {
                     notifyBoardTouch(xy / 100, xy % 100);
+                    Place touched = board.getPlace(xy / 100, xy % 100);
+                    if(board.hit(touched)) {
+                        shots.setText("Number of Shots: "+board.getNumOfShots());
+                        invalidate();
+                    }
                 }
                 break;
             case MotionEvent.ACTION_DOWN:
@@ -119,7 +159,20 @@ public class BoardView extends View {
     private void drawPlaces(Canvas canvas) {
         // *** FOR YOU TO COMPLETE ***
         // check the state of each place of the board and draw it.
+        for(Place currentPlace : board.places()){
+            boolean flag = currentPlace.isHit();
+            if(flag) {
+                if(currentPlace.isShip()){
+                    canvas.drawRect((currentPlace.getX())*lineGap()+2, (currentPlace.getY())*lineGap()+2, (currentPlace.getX()+1)*lineGap(),(currentPlace.getY()+1)*lineGap(), shipPaint);
+                }
+                else {
+                    canvas.drawRect((currentPlace.getX())*lineGap()+2, (currentPlace.getY())*lineGap()+2, (currentPlace.getX()+1)*lineGap(),(currentPlace.getY()+1)*lineGap(), shotPaint);
+                }
+            }
+        }
     }
+
+
 
     /** Draw horizontal and vertical lines. */
     private void drawGrid(Canvas canvas) {
