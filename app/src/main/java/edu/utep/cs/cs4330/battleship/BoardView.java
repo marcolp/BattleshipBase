@@ -7,6 +7,7 @@ import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -19,10 +20,7 @@ import java.util.List;
  * @see Board
  */
 public class BoardView extends View {
-
-    private TextView shots;
-
-
+    /**=====================================BoardListener STUFF===========================================================*/
     /** Callback interface to listen for board touches. */
     public interface BoardTouchListener {
 
@@ -39,12 +37,32 @@ public class BoardView extends View {
     /** Listeners to be notified upon board touches. */
     private final List<BoardTouchListener> listeners = new ArrayList<>();
 
+    /** Register the given listener. */
+    public void addBoardTouchListener(BoardTouchListener listener) {
+        if (!listeners.contains(listener)) {
+            listeners.add(listener);
+        }
+    }
+
+    /** Unregister the given listener. */
+    public void removeBoardTouchListener(BoardTouchListener listener) {
+        listeners.remove(listener);
+    }
+
+    /** Notify all registered listeners. */
+    private void notifyBoardTouch(int x, int y) {
+        for (BoardTouchListener listener: listeners) {
+            listener.onTouch(x, y);
+        }
+    }
+    /**=====================================BoardListener STUFF===========================================================*/
+
+    /**=====================================PAINT STUFF===========================================================*/
     /** Board background color. */
     private final int boardColor = Color.rgb(102, 163, 255);
 
     /** Board background paint. */
-    private final Paint boardPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    {
+    private final Paint boardPaint = new Paint(Paint.ANTI_ALIAS_FLAG);{
         boardPaint.setColor(boardColor);
     }
 
@@ -68,18 +86,27 @@ public class BoardView extends View {
     private final int boardLineColor = Color.WHITE;
 
     /** Board grid line paint. */
-    private final Paint boardLinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    {
+    private final Paint boardLinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);{
         boardLinePaint.setColor(boardLineColor);
         boardLinePaint.setStrokeWidth(2);
     }
+    /**=====================================PAINT STUFF===========================================================*/
+
+    /**=====================================CLASS FIELDS===========================================================*/
+    /**TextView displaying the amount of shots made.*/
+    private TextView shots;
+
+    /**Button for new game to be created.*/
+    private Button newGame;
 
     /** Board to be displayed by this view. */
     private Board board;
 
     /** Size of the board. */
     private int boardSize;
+    /**=====================================CLASS FIELDS===========================================================*/
 
+    /**=====================================CLASS CONSTRUCTORS===========================================================*/
     /** Create a new board view to be run in the given context. */
     public BoardView(Context context) {
         super(context);
@@ -94,8 +121,20 @@ public class BoardView extends View {
     public BoardView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
     }
+    /**=====================================CLASS CONSTRUCTORS===========================================================*/
 
+    /**=====================================BUTTON LISTENER STUFF===========================================================*/
 
+    public boolean setNewButton(Button newGameButton){
+        this.newGame = newGameButton;
+        if (this.newGame == null) return false;
+        else return true;
+    }
+
+    public void setButtonListener(OnClickListener buttonListener) {
+        this.newGame.setOnClickListener(buttonListener);
+    }
+    /**=====================================BUTTON LISTENER STUFF===========================================================*/
 
     /**
      * Assign the text view from the activity
@@ -172,8 +211,6 @@ public class BoardView extends View {
         }
     }
 
-
-
     /** Draw horizontal and vertical lines. */
     private void drawGrid(Canvas canvas) {
         final float maxCoord = maxCoord();
@@ -215,24 +252,5 @@ public class BoardView extends View {
             return ix * 100 + iy;
         }
         return -1;
-    }
-
-    /** Register the given listener. */
-    public void addBoardTouchListener(BoardTouchListener listener) {
-        if (!listeners.contains(listener)) {
-            listeners.add(listener);
-        }
-    }
-
-    /** Unregister the given listener. */
-    public void removeBoardTouchListener(BoardTouchListener listener) {
-        listeners.remove(listener);
-    }
-
-    /** Notify all registered listeners. */
-    private void notifyBoardTouch(int x, int y) {
-        for (BoardTouchListener listener: listeners) {
-            listener.onTouch(x, y);
-        }
     }
 }
