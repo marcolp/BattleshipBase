@@ -4,6 +4,10 @@ import java.util.ArrayList;
 import java.util.Random;
 
 /**
+ * Marco Lopez
+ * CS 5390 - Mobile Application Development
+ * 2/14/2017
+ *
  * A game board consisting of <code>size</code> * <code>size</code> places
  * where battleships can be placed. A place of the board is denoted
  * by a pair of 0-based indices (x, y), where x is a column index

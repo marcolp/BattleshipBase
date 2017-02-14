@@ -2,8 +2,10 @@ package edu.utep.cs.cs4330.battleship;
 
 import android.view.View;
 
-/**
- * Created by LopezMarcoA on 2/13/2017.
+/** Marco Lopez
+ * CS 5390 - Mobile Application Development
+ * 2/14/2017
+ *
  */
 
 public class GameController {

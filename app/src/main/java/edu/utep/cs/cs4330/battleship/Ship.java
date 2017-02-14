@@ -2,8 +2,10 @@ package edu.utep.cs.cs4330.battleship;
 
 import java.util.ArrayList;
 
-/**
- * Created by marcolopez on 2/2/17.
+/** Marco Lopez
+ * CS 5390 - Mobile Application Development
+ * 2/14/2017
+ *
  */
 
 public class Ship {

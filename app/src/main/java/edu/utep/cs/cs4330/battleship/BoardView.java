@@ -13,7 +13,10 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
+/** Marco Lopez
+ * CS 5390 - Mobile Application Development
+ * 2/14/2017
+ *
  * A special view class to display a battleship board as a2D grid.
  *
  * This is the view class in MVC

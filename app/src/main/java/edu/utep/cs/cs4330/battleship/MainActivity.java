@@ -5,6 +5,11 @@ import android.os.Bundle;
 import android.widget.TextView;
 import android.widget.Toast;
 
+/** Marco Lopez
+ * CS 5390 - Mobile Application Development
+ * 2/14/2017
+ *
+ */
 public class MainActivity extends AppCompatActivity {
 
     private Board board;
