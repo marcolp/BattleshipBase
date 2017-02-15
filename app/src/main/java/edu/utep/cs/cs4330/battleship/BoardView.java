@@ -1,5 +1,6 @@
 package edu.utep.cs.cs4330.battleship;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
@@ -215,6 +216,35 @@ public class BoardView extends View {
     AlertDialog gameOverDialog;
     AlertDialog newGameDialog;
 
+//    public class NewGameDialogFragment extends DialogFragment {
+//
+//        /* The activity that creates an instance of this dialog fragment must
+//         * implement this interface in order to receive event callbacks.
+//         * Each method passes the DialogFragment in case the host needs to query it. */
+//        public interface NewGameDialogFragment {
+//            public void onDialogPositiveClick(DialogFragment dialog);
+//            public void onDialogNegativeClick(DialogFragment dialog);
+//        }
+//
+//        // Use this instance of the interface to deliver action events
+//        NewGameDialogFragment mListener;
+//
+//        // Override the Fragment.onAttach() method to instantiate the NoticeDialogListener
+//        @Override
+//        public void onAttach(Activity activity) {
+//            super.onAttach(activity);
+//            // Verify that the host activity implements the callback interface
+//            try {
+//                // Instantiate the NoticeDialogListener so we can send events to the host
+//                mListener = (NewGameDialogFragment) activity;
+//            } catch (ClassCastException e) {
+//                // The activity doesn't implement the interface, throw exception
+//                throw new ClassCastException(activity.toString()
+//                        + " must implement NoticeDialogListener");
+//            }
+//        }
+//
+//    }
     public void createGameOverDialog(){
         AlertDialog.Builder builder1 = new AlertDialog.Builder(this.getContext());
         builder1.setTitle("Game Over!");
@@ -226,29 +256,30 @@ public class BoardView extends View {
     }
 
     public void createNewGameDialog(){
-        AlertDialog.Builder builder2 = new AlertDialog.Builder(this.getContext());
-        builder2.setTitle("New Game");
-        builder2.setMessage("All progress will be lost. Continue?");
-        builder2.setCancelable(true);
 
-        builder2.setPositiveButton(
-                "Yes",
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        dialog.cancel();
-                    }
-                });
-
-        builder2.setNegativeButton(
-                "No",
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        dialog.cancel();
-                    }
-                });
-
-        newGameDialog = builder2.create();
-        newGameDialog.show();
+//        AlertDialog.Builder builder2 = new AlertDialog.Builder(this.getContext());
+//        builder2.setTitle("New Game");
+//        builder2.setMessage("All progress will be lost. Continue?");
+//        builder2.setCancelable(true);
+//
+//        builder2.setPositiveButton(
+//                "Yes",
+//                new DialogInterface.OnClickListener() {
+//                    public void onClick(DialogInterface dialog, int id) {
+//                        dialog.cancel();
+//                    }
+//                });
+//
+//        builder2.setNegativeButton(
+//                "No",
+//                new DialogInterface.OnClickListener() {
+//                    public void onClick(DialogInterface dialog, int id) {
+//                        dialog.cancel();
+//                    }
+//                });
+//
+//        newGameDialog = builder2.create();
+//        newGameDialog.show();
     }
     /**=====================================DIALOG STUFF===========================================================*/
 

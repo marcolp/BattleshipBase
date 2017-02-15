@@ -14,7 +14,7 @@ import android.widget.Toast;
  *
  * This is the controller in the MVC
  */
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity{
 
     private Board board;
     private BoardView boardView;
