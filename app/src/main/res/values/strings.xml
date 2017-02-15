@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">Battleship</string>
     <string name="new_button_label">New</string>
+    <string name="game_over">All ships sunk! Game over.</string>
+    <string name="new_game">All progress will be lost. Continue?</string>
+    <string name="Continue">New Game</string>
+    <string name="cancel">Cancel</string>
 </resources>

@@ -5,7 +5,6 @@ import java.util.ArrayList;
 /** Marco Lopez
  * CS 5390 - Mobile Application Development
  * 2/14/2017
- *
  */
 
 public class Ship {
@@ -50,10 +49,7 @@ public class Ship {
         //If we traverse all the coordinates then it means the ship has been sunk
         return true;
     }
-
     public void setSunk(boolean sunk) {
         this.sunk = sunk;
     }
-
-
 }

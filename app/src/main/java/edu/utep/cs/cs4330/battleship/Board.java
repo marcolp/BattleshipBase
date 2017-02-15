@@ -144,19 +144,43 @@ public class Board {
         return true;
     }
 
-    /**
-     * Return true if the place has not been hit
-     * before, false otherwise.
-     * @param place
-     * @return
-     */
-    public boolean hit(Place place){
-        if(!place.isHit()){
-            place.setHit(true);
-            increaseShots();
-            return true;
+    public void makeShot(int x, int y){
+        Place placeShot = getPlace(x,y);
+        if(!placeShot.isHit()){
+            placeShot.setHit(true);
+            updateShips();
+            numOfShots++;
         }
-        return false;
+    }
+
+    /**
+     * Update ship's places to see if it is sunk
+     */
+    public void updateShips(){
+        /**Traverse ships to look for one that has the parameter place*/
+        for(Ship currentShip : ships){
+            boolean sunkFlag = true;
+            /**Traverse ship's places to see which one has the parameter place*/
+            for(Place currentPlace : currentShip.getLocation()){
+                if(!currentPlace.isHit()){
+                    sunkFlag = false;
+                    break;
+                }
+            }
+            if(sunkFlag) currentShip.setSunk(true);
+        }
+    }
+    /**
+     * If the place has not been hit before, set it
+     * to be hit.
+     *
+     * @param place - the place to hit
+     * @return - false if the place has not been hit
+     * before, true otherwise.
+     */
+    public boolean isHit(Place place){
+        if(!place.isHit()) return false;
+        return true;
     }
 
     public Place at(int x, int y){

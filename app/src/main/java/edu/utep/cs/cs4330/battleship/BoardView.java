@@ -1,9 +1,14 @@
 package edu.utep.cs.cs4330.battleship;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.DialogFragment;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.os.Bundle;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -37,6 +42,39 @@ public class BoardView extends View {
         void onTouch(int x, int y);
     }
 
+    /**
+     * Overridden here to detect a board touch. When the board is
+     * touched, the corresponding place is identified,
+     * and registered listeners are notified.
+     *
+     * @see BoardTouchListener
+     */
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_UP:
+                int xy = locatePlace(event.getX(), event.getY());
+                if (xy >= 0) {
+                    notifyBoardTouch(xy / 100, xy % 100);
+                    redraw();
+                }
+                break;
+            case MotionEvent.ACTION_DOWN:
+            case MotionEvent.ACTION_MOVE:
+            case MotionEvent.ACTION_CANCEL:
+                break;
+        }
+        return true;
+    }
+
+
+
+    /** Notify all registered listeners. */
+    private void notifyBoardTouch(int x, int y) {
+        for (BoardTouchListener listener: listeners) {
+            listener.onTouch(x, y);
+        }
+    }
     /** Listeners to be notified upon board touches. */
     private final List<BoardTouchListener> listeners = new ArrayList<>();
 
@@ -50,13 +88,6 @@ public class BoardView extends View {
     /** Unregister the given listener. */
     public void removeBoardTouchListener(BoardTouchListener listener) {
         listeners.remove(listener);
-    }
-
-    /** Notify all registered listeners. */
-    private void notifyBoardTouch(int x, int y) {
-        for (BoardTouchListener listener: listeners) {
-            listener.onTouch(x, y);
-        }
     }
     /**=====================================BoardListener STUFF===========================================================*/
 
@@ -102,9 +133,6 @@ public class BoardView extends View {
     /**Button for new game to be created.*/
     private Button newGame;
 
-    /** Board to be displayed by this view. */
-    private Board board;
-
     /** Size of the board. */
     private int boardSize;
     /**=====================================CLASS FIELDS===========================================================*/
@@ -139,6 +167,93 @@ public class BoardView extends View {
     }
     /**=====================================BUTTON LISTENER STUFF===========================================================*/
 
+    /**=====================================DRAWING STUFF===========================================================*/
+    /** Overridden here to draw a 2-D representation of the board. */
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+        drawGrid(canvas);
+        drawPlaces(canvas);
+    }
+
+    protected void redraw(){
+        invalidate();
+    }
+
+    /** Draw all the places of the board. */
+    private void drawPlaces(Canvas canvas) {
+//         check the state of each place of the board and draw it.
+        for(Place currentPlace : board.places()){
+            boolean flag = currentPlace.isHit();
+            if(flag) {
+                Paint toPaint = new Paint(0);
+                if(currentPlace.isShip()){
+                    toPaint = shipPaint;
+                }
+                else {
+                    toPaint = shotPaint;
+                }
+                canvas.drawRect((currentPlace.getX())*lineGap()+2, (currentPlace.getY())*lineGap()+2, (currentPlace.getX()+1)*lineGap(),(currentPlace.getY()+1)*lineGap(), toPaint);
+            }
+        }
+    }
+
+    /** Draw horizontal and vertical lines. */
+    private void drawGrid(Canvas canvas) {
+        final float maxCoord = maxCoord();
+        final float placeSize = lineGap();
+        canvas.drawRect(0, 0, maxCoord, maxCoord, boardPaint);
+        for (int i = 0; i < numOfLines(); i++) {
+            float xy = i * placeSize;
+            canvas.drawLine(0, xy, maxCoord, xy, boardLinePaint); // horizontal line
+            canvas.drawLine(xy, 0, xy, maxCoord, boardLinePaint); // vertical line
+        }
+    }
+    /**=====================================DRAWING STUFF===========================================================*/
+
+    /**=====================================DIALOG STUFF===========================================================*/
+    AlertDialog gameOverDialog;
+    AlertDialog newGameDialog;
+
+    public void createGameOverDialog(){
+        AlertDialog.Builder builder1 = new AlertDialog.Builder(this.getContext());
+        builder1.setTitle("Game Over!");
+        builder1.setMessage("All ships sunk! You Win!");
+        builder1.setCancelable(true);
+
+        gameOverDialog = builder1.create();
+        gameOverDialog.show();
+    }
+
+    public void createNewGameDialog(){
+        AlertDialog.Builder builder2 = new AlertDialog.Builder(this.getContext());
+        builder2.setTitle("New Game");
+        builder2.setMessage("All progress will be lost. Continue?");
+        builder2.setCancelable(true);
+
+        builder2.setPositiveButton(
+                "Yes",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
+
+        builder2.setNegativeButton(
+                "No",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
+
+        newGameDialog = builder2.create();
+        newGameDialog.show();
+    }
+    /**=====================================DIALOG STUFF===========================================================*/
+
+    private Board board;
+
     /**
      * Assign the text view from the activity
      * or some other view that can see R.id.numShots
@@ -160,70 +275,11 @@ public class BoardView extends View {
         this.boardSize = board.size();
     }
 
-    /**
-     * Overridden here to detect a board touch. When the board is
-     * touched, the corresponding place is identified,
-     * and registered listeners are notified.
-     *
-     * @see BoardTouchListener
-     */
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_UP:
-                int xy = locatePlace(event.getX(), event.getY());
-                if (xy >= 0) {
-                    notifyBoardTouch(xy / 100, xy % 100);
-                    Place touched = board.getPlace(xy / 100, xy % 100);
-                    if(board.hit(touched)) {
-                        shots.setText("Number of Shots: "+board.getNumOfShots());
-                        invalidate();
-                    }
-                }
-                break;
-            case MotionEvent.ACTION_DOWN:
-            case MotionEvent.ACTION_MOVE:
-            case MotionEvent.ACTION_CANCEL:
-                break;
-        }
-        return true;
-    }
-
-    /** Overridden here to draw a 2-D representation of the board. */
-    @Override
-    protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-        drawGrid(canvas);
-        drawPlaces(canvas);
-    }
-
-    /** Draw all the places of the board. */
-    private void drawPlaces(Canvas canvas) {
-        // *** FOR YOU TO COMPLETE ***
-        // check the state of each place of the board and draw it.
-        for(Place currentPlace : board.places()){
-            boolean flag = currentPlace.isHit();
-            if(flag) {
-                if(currentPlace.isShip()){
-                    canvas.drawRect((currentPlace.getX())*lineGap()+2, (currentPlace.getY())*lineGap()+2, (currentPlace.getX()+1)*lineGap(),(currentPlace.getY()+1)*lineGap(), shipPaint);
-                }
-                else {
-                    canvas.drawRect((currentPlace.getX())*lineGap()+2, (currentPlace.getY())*lineGap()+2, (currentPlace.getX()+1)*lineGap(),(currentPlace.getY()+1)*lineGap(), shotPaint);
-                }
-            }
-        }
-    }
-
-    /** Draw horizontal and vertical lines. */
-    private void drawGrid(Canvas canvas) {
-        final float maxCoord = maxCoord();
-        final float placeSize = lineGap();
-        canvas.drawRect(0, 0, maxCoord, maxCoord, boardPaint);
-        for (int i = 0; i < numOfLines(); i++) {
-            float xy = i * placeSize;
-            canvas.drawLine(0, xy, maxCoord, xy, boardLinePaint); // horizontal line
-            canvas.drawLine(xy, 0, xy, maxCoord, boardLinePaint); // vertical line
-        }
+    public String updateShotNumber(int number){
+        String text = "Number of shots: ";
+        text += number;
+        shots.setText(text);
+        return text;
     }
 
     /** Calculate the gap between two horizontal/vertical lines. */
