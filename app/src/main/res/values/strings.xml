@@ -5,4 +5,8 @@
     <string name="new_game">All progress will be lost. Continue?</string>
     <string name="Continue">New Game</string>
     <string name="cancel">Cancel</string>
+
+    <string name="cannon_shot">Shot</string>
+    <string name="game_over_win">Win</string>
+    <string name="ship_sink">Sink</string>
 </resources>

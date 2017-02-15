@@ -170,6 +170,20 @@ public class Board {
             if(sunkFlag) currentShip.setSunk(true);
         }
     }
+
+    protected Ship getShip(Place place){
+        /**Traverse ships to look for one that has the parameter place*/
+        for(Ship currentShip : ships){
+            boolean sunkFlag = true;
+            /**Traverse ship's places to see which one has the parameter place*/
+            for(Place currentPlace : currentShip.getLocation()){
+                if(currentPlace.getX() == place.getX() && currentPlace.getY() == place.getY()){
+                    return currentShip;
+                }
+            }
+        }
+        return null;
+    }
     /**
      * If the place has not been hit before, set it
      * to be hit.
@@ -207,7 +221,9 @@ public class Board {
      */
     public Place getPlace(int x, int y){
         for(Place currentPlace : places){
-            if(currentPlace.getX() == x && currentPlace.getY() == y) return currentPlace;
+            if(currentPlace.getX() == x && currentPlace.getY() == y) {
+                return currentPlace;
+            }
         }
         return null;
     }
