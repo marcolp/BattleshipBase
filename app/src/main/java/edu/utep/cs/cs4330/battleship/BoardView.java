@@ -213,8 +213,8 @@ public class BoardView extends View {
     /**=====================================DRAWING STUFF===========================================================*/
 
     /**=====================================DIALOG STUFF===========================================================*/
-    AlertDialog gameOverDialog;
-    AlertDialog newGameDialog;
+    private AlertDialog gameOverDialog;
+    private AlertDialog newGameDialog;
 
 //    public class NewGameDialogFragment extends DialogFragment {
 //
@@ -306,7 +306,7 @@ public class BoardView extends View {
         this.boardSize = board.size();
     }
 
-    public String updateShotNumber(int number){
+    protected String updateShotNumber(int number){
         String text = "Number of shots: ";
         text += number;
         shots.setText(text);

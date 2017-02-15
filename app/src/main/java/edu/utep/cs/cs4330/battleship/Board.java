@@ -87,7 +87,7 @@ public class Board {
      * @param dir - Direction of ship. True for horizontal, false for vertical
      * @return True if the ship was successfully placed, false otherwise
      */
-    public boolean placeShip(Ship ship, int x, int y, boolean dir){
+    private boolean placeShip(Ship ship, int x, int y, boolean dir){
         Place startingPlace = getPlace(x,y);
 
         //Verify that there isn't a ship where we are trying to place
@@ -121,7 +121,7 @@ public class Board {
      * Method to randomly place ships
      * @return
      */
-    public boolean placeShips(){
+    private boolean placeShips(){
         Random rand = new Random();
 
         //Traverse all ships to place them all
@@ -184,22 +184,6 @@ public class Board {
         }
         return null;
     }
-    /**
-     * If the place has not been hit before, set it
-     * to be hit.
-     *
-     * @param place - the place to hit
-     * @return - false if the place has not been hit
-     * before, true otherwise.
-     */
-    public boolean isHit(Place place){
-        if(!place.isHit()) return false;
-        return true;
-    }
-
-    public Place at(int x, int y){
-        return null;
-    }
 
     public ArrayList<Place> places(){
         return this.places;
@@ -207,10 +191,6 @@ public class Board {
 
     public int getNumOfShots(){
         return numOfShots;
-    }
-
-    public void increaseShots(){
-        numOfShots++;
     }
 
     /**
