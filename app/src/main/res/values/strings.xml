@@ -9,4 +9,8 @@
     <string name="cannon_shot">Shot</string>
     <string name="game_over_win">Win</string>
     <string name="ship_sink">Sink</string>
+    <string name="title_activity_main2">Main2Activity</string>
+
+    <!--MENU STRINGS-->
+    <string name="sound_option">Sound OFF</string>
 </resources>
