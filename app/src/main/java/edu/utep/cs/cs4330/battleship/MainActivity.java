@@ -33,43 +33,6 @@ public class MainActivity extends AppCompatActivity{
 
     private boolean soundOption; //Boolean value to indicate if sound option is on or off
 
-    @Override
-    protected void onPause(){
-        Log.d("Main Activity", "This is the onPause method");
-        super.onPause();
-
-    }
-
-    @Override
-    protected void onResume(){
-        Log.d("Main Activity", "This is the onResume method");
-        super.onResume();
-    }
-
-    @Override
-    protected void onStart(){
-        Log.d("Main Activity", "This is the onStart method");
-        super.onStart();
-
-    }
-
-    @Override
-    protected void onStop(){
-        Log.d("Main Activity", "This is the onStop method");
-        super.onStop();
-    }
-
-    @Override
-    protected void onRestart(){
-        Log.d("Main Activity", "This is the onRestart method");
-        super.onStop();
-    }
-
-    @Override
-    protected void onDestroy(){
-        Log.d("Main Activity", "This is the onDestroy method");
-        super.onStop();
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -216,4 +179,42 @@ public class MainActivity extends AppCompatActivity{
 
         return super.onOptionsItemSelected(item);
     }
+    @Override
+    protected void onPause(){
+        Log.d("Main Activity", "This is the onPause method");
+        super.onPause();
+
+    }
+
+    @Override
+    protected void onResume(){
+        Log.d("Main Activity", "This is the onResume method");
+        super.onResume();
+    }
+
+    @Override
+    protected void onStart(){
+        Log.d("Main Activity", "This is the onStart method");
+        super.onStart();
+
+    }
+
+    @Override
+    protected void onStop(){
+        Log.d("Main Activity", "This is the onStop method");
+        super.onStop();
+    }
+
+    @Override
+    protected void onRestart(){
+        Log.d("Main Activity", "This is the onRestart method");
+        super.onRestart();
+    }
+
+    @Override
+    protected void onDestroy(){
+        Log.d("Main Activity", "This is the onDestroy method");
+        super.onDestroy();
+    }
+
 }
