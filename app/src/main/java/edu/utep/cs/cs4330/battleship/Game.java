@@ -6,6 +6,7 @@ package edu.utep.cs.cs4330.battleship;
 
 public class Game {
 
+    int numShots; //integer representing the number of shots human player has made
     Player player1;
     ComputerPlayer player2;
 
@@ -15,8 +16,8 @@ public class Game {
     }
 
     public void makePlayerShot(Place place){
-        place.hit();
-        if(!isGameOveR() && !place.isShip()){
+        place.setHit(true);
+        if(!isGameOver() && !place.isShip()){
             changeTurn();
             new Thread(this::makeComputerShot).start();
 
@@ -26,13 +27,15 @@ public class Game {
     private void makeComputerShot() {
         try {
             Thread.sleep(500);
-        } catch (InterruptedException e) {
+        }   catch (InterruptedException e) {
         }
 
         boolean hit = opponent().makeMove();
     }
 
     private boolean isGameOver(){
-        if(player1.is)
+        if(player1.allSunk() || player2.allSunk())
+            return true;
+        else return false;
     }
 }

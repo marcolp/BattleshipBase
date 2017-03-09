@@ -5,4 +5,15 @@ package edu.utep.cs.cs4330.battleship;
  */
 
 public class Strategy {
+
+    Board attackBoard;
+
+    public Strategy(Board attackBoard) {
+        this.attackBoard = attackBoard;
+    }
+
+    Strategy(){
+
+    }
+
 }

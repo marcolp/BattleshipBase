@@ -30,6 +30,32 @@ public class Player {
         playerNumber = 0;
     }
 
+    /**
+     * Update ship's places to see if it is sunk
+     */
+    public void updateShips(){
+        /**Traverse ships to look for one that has the parameter place*/
+        for(Ship currentShip : myShips){
+            boolean sunkFlag = true;
+            /**Traverse ship's places to see which one has the parameter place*/
+            for(Place currentPlace : currentShip.getLocation()){
+                if(!currentPlace.isHit()){
+                    sunkFlag = false;
+                    break;
+                }
+            }
+            if(sunkFlag) currentShip.setSunk(true);
+        }
+    }
+
+    public void makeShot(int x, int y){
+        Place placeShot = myBoard.getPlace(x,y);
+        if(!placeShot.isHit()){
+            placeShot.setHit(true);
+            updateShips();
+        }
+    }
+
     public boolean allSunk(){
         for(Ship currentShip : myShips){
             if(!currentShip.isSunk()) return false;

@@ -24,10 +24,6 @@ public class Board {
      */
     private final int size;
 
-    //Amount of shots the player has made on the board.
-    //Shots on the same coordinate will not increase this value.
-    private int numOfShots;
-
     //2D matrix of place objects representing the board
     private ArrayList<Place> places;
 
@@ -36,7 +32,6 @@ public class Board {
     /** Create a new board of the given size. */
     public Board(int size) {
         this.size = size;
-        this.numOfShots = 0;
         this.places = new ArrayList<Place>();
         for(int col = 0; col < size; col++){
             for(int row = 0; row < size; row++){
@@ -57,7 +52,10 @@ public class Board {
         ships.add(frigate);
         ships.add(submarine);
         ships.add(minesweeper);
-        placeShips();
+    }
+
+    public int getSize() {
+        return size;
     }
 
     /** Return the size of this board. */
@@ -79,97 +77,10 @@ public class Board {
     //    public boolean isGameOver()
     //    ...
 
-    /**
-     *
-     * @param ship - ship to place
-     * @param x - x coordinate
-     * @param y - y coordinate
-     * @param dir - Direction of ship. True for horizontal, false for vertical
-     * @return True if the ship was successfully placed, false otherwise
-     */
-    private boolean placeShip(Ship ship, int x, int y, boolean dir){
-        Place startingPlace = getPlace(x,y);
-
-        //Verify that there isn't a ship where we are trying to place
-        for(int i = 0; i < ship.getSize(); i++){
-            if(dir){
-                if(x+i >= size) return false;
-                else if (getPlace(x + i, y).isShip()) return false;
-            }
-            else{
-                if(y+i >= size) return false;
-                if(getPlace(x,y+i).isShip()) return false;
-            }
-        }
-
-        //Actually place the ship
-        for(int i = 0; i < ship.getSize(); i++){
-            if(dir){
-                ship.getLocation().add(getPlace(x+i,y));
-                getPlace(x+i,y).setShip(true);
-            }
-            else{
-                ship.getLocation().add(getPlace(x,y+i));
-                getPlace(x,y+i).setShip(true);
-            }
-        }
-        return true;
-    }
 
 
-    /**
-     * Method to randomly place ships
-     * @return
-     */
-    private boolean placeShips(){
-        Random rand = new Random();
 
-        //Traverse all ships to place them all
-        for(Ship currentShip : ships){
 
-            //Flag to determine whether the ship was placed
-            boolean placed = false;
-            while(!placed) {
-
-                //Random direction for the ship
-                boolean direction = rand.nextBoolean();
-
-                //Random location
-                int x = rand.nextInt(this.size-1);
-                int y = rand.nextInt(this.size-1);
-
-                placed = placeShip(currentShip, x, y, direction);
-            }
-        }
-        return true;
-    }
-
-    public void makeShot(int x, int y){
-        Place placeShot = getPlace(x,y);
-        if(!placeShot.isHit()){
-            placeShot.setHit(true);
-            updateShips();
-            numOfShots++;
-        }
-    }
-
-    /**
-     * Update ship's places to see if it is sunk
-     */
-    public void updateShips(){
-        /**Traverse ships to look for one that has the parameter place*/
-        for(Ship currentShip : ships){
-            boolean sunkFlag = true;
-            /**Traverse ship's places to see which one has the parameter place*/
-            for(Place currentPlace : currentShip.getLocation()){
-                if(!currentPlace.isHit()){
-                    sunkFlag = false;
-                    break;
-                }
-            }
-            if(sunkFlag) currentShip.setSunk(true);
-        }
-    }
 
     protected Ship getShip(Place place){
         /**Traverse ships to look for one that has the parameter place*/
@@ -189,9 +100,6 @@ public class Board {
         return this.places;
     }
 
-    public int getNumOfShots(){
-        return numOfShots;
-    }
 
     /**
      * Return a place object based on the coordinates
@@ -206,16 +114,5 @@ public class Board {
             }
         }
         return null;
-    }
-
-    /**
-     * Game is over when all ships are sunk.
-     * @return
-     */
-    public boolean isGameOver(){
-        for(Ship currentShip : ships){
-            if(!currentShip.isSunk()) return false;
-        }
-        return true;
     }
 }
