@@ -9,10 +9,13 @@ public class Game {
     int numShots; //integer representing the number of shots human player has made
     Player player1;
     ComputerPlayer player2;
+    int currentTurn;
 
     Game(){
         player1 = new Player();
         player2 = new ComputerPlayer();
+        numShots = 0;
+        currentTurn = 0;
     }
 
     public void makePlayerShot(Place place){
@@ -20,7 +23,6 @@ public class Game {
         if(!isGameOver() && !place.isShip()){
             changeTurn();
             new Thread(this::makeComputerShot).start();
-
         }
     }
 
