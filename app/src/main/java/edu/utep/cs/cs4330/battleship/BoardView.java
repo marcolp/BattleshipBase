@@ -125,6 +125,15 @@ public class BoardView extends View {
         boardLinePaint.setColor(boardLineColor);
         boardLinePaint.setStrokeWidth(2);
     }
+
+    /** Green color*/
+    private final int greenColor = Color.rgb(100, 200, 50);
+    private final Paint greenPaint = new Paint(Paint.ANTI_ALIAS_FLAG);{
+        greenPaint.setColor(greenColor);
+        greenPaint.setStrokeWidth(2);
+    }
+
+
     /**=====================================PAINT STUFF===========================================================*/
 
     /**=====================================CLASS FIELDS===========================================================*/
@@ -170,6 +179,16 @@ public class BoardView extends View {
 
     /**=====================================DRAWING STUFF===========================================================*/
     /** Overridden here to draw a 2-D representation of the board. */
+    private Boolean firstActivity;
+
+    public Boolean getFirstActivity() {
+        return firstActivity;
+    }
+
+    public void setFirstActivity(Boolean firstActivity) {
+        this.firstActivity = firstActivity;
+    }
+
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
@@ -183,21 +202,41 @@ public class BoardView extends View {
 
     /** Draw all the places of the board. */
     private void drawPlaces(Canvas canvas) {
+
+        if(firstActivity){
+            drawShips(canvas);
+        }
+
+        else {
 //         check the state of each place of the board and draw it.
-        for(Place currentPlace : board.places()){
-            boolean flag = currentPlace.isHit();
-            if(flag) {
-                Paint toPaint = new Paint(0);
-                if(currentPlace.isShip()){
-                    toPaint = shipPaint;
+            for (Place currentPlace : board.places()) {
+                boolean flag = currentPlace.isHit();
+                if (flag) {
+                    Paint toPaint = new Paint(0);
+                    if (currentPlace.isShip()) {
+                        toPaint = shipPaint;
+                    } else {
+                        toPaint = shotPaint;
+                    }
+                    canvas.drawRect((currentPlace.getX()) * lineGap() + 2, (currentPlace.getY()) * lineGap() + 2, (currentPlace.getX() + 1) * lineGap(), (currentPlace.getY() + 1) * lineGap(), toPaint);
                 }
-                else {
-                    toPaint = shotPaint;
-                }
-                canvas.drawRect((currentPlace.getX())*lineGap()+2, (currentPlace.getY())*lineGap()+2, (currentPlace.getX()+1)*lineGap(),(currentPlace.getY()+1)*lineGap(), toPaint);
             }
         }
     }
+
+    /**
+     * Only draw ships on grid.
+     * Green if they are in a valid position, red if they overlap with another ship
+     * @param canvas
+     */
+    private void drawShips(Canvas canvas){
+        for (Place currentPlace : board.places()) {
+            if (currentPlace.isShip())
+
+                canvas.drawRect((currentPlace.getX()) * lineGap() + 2, (currentPlace.getY()) * lineGap() + 2, (currentPlace.getX() + 1) * lineGap(), (currentPlace.getY() + 1) * lineGap(), greenPaint);
+        }
+    }
+
 
     /** Draw horizontal and vertical lines. */
     private void drawGrid(Canvas canvas) {
@@ -212,7 +251,7 @@ public class BoardView extends View {
     }
     /**=====================================DRAWING STUFF===========================================================*/
 
-    /**=====================================DIALOG STUFF===========================================================*/
+    /**=====================================DIALOG STUFF============================================================*/
     private AlertDialog gameOverDialog;
     private AlertDialog newGameDialog;
 
@@ -285,20 +324,7 @@ public class BoardView extends View {
 
     private Board board;
 
-    /**
-     * Assign the text view from the activity
-     * or some other view that can see R.id.numShots
-     * in order to be able to update it. Return true
-     * if it was successfully assigned, false otherwise.
-     *
-     * @param shotTextView
-     * @return
-     */
-    public boolean setShotsTextView(TextView shotTextView){
-        this.shots = shotTextView;
-        if(this.shots == null) return false;
-        else return true;
-    }
+
 
     /** Set the board to to be displayed by this view. */
     public void setBoard(Board board) {
@@ -306,12 +332,7 @@ public class BoardView extends View {
         this.boardSize = board.size();
     }
 
-    protected String updateShotNumber(int number){
-        String text = "Number of shots: ";
-        text += number;
-        shots.setText(text);
-        return text;
-    }
+
 
     /** Calculate the gap between two horizontal/vertical lines. */
     protected float lineGap() {

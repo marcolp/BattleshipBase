@@ -27,8 +27,6 @@ public class Board {
     //2D matrix of place objects representing the board
     private ArrayList<Place> places;
 
-    private ArrayList<Ship> ships;
-
     /** Create a new board of the given size. */
     public Board(int size) {
         this.size = size;
@@ -39,19 +37,6 @@ public class Board {
                 places.add(newPlace);
             }
         }
-
-        Ship aircraftCarrier = new Ship(5);
-        Ship battleship = new Ship(4);
-        Ship frigate = new Ship(3);
-        Ship submarine = new Ship(3);
-        Ship minesweeper = new Ship(2);
-
-        ships = new ArrayList<Ship>();
-        ships.add(aircraftCarrier);
-        ships.add(battleship);
-        ships.add(frigate);
-        ships.add(submarine);
-        ships.add(minesweeper);
     }
 
     public int getSize() {
@@ -79,22 +64,6 @@ public class Board {
 
 
 
-
-
-
-    protected Ship getShip(Place place){
-        /**Traverse ships to look for one that has the parameter place*/
-        for(Ship currentShip : ships){
-            boolean sunkFlag = true;
-            /**Traverse ship's places to see which one has the parameter place*/
-            for(Place currentPlace : currentShip.getLocation()){
-                if(currentPlace.getX() == place.getX() && currentPlace.getY() == place.getY()){
-                    return currentShip;
-                }
-            }
-        }
-        return null;
-    }
 
     public ArrayList<Place> places(){
         return this.places;

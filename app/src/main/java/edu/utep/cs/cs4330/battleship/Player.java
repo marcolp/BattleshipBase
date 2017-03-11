@@ -20,6 +20,12 @@ public class Player {
         Ship submarine = new Ship(3);
         Ship minesweeper = new Ship(2);
 
+        aircraftCarrier.setShipType(Ship.Type.AIRCRAFT_CARRIER);
+        battleship.setShipType(Ship.Type.BATTLESHIP);
+        frigate.setShipType(Ship.Type.FRIGATE);
+        submarine.setShipType(Ship.Type.SUBMARINE);
+        minesweeper.setShipType(Ship.Type.MINESWEEPER);
+
         myShips = new ArrayList<Ship>();
         myShips.add(aircraftCarrier);
         myShips.add(battleship);
@@ -62,6 +68,8 @@ public class Player {
         }
         return true;
     }
+
+//    public Ship getShipByType;
 
     public ArrayList<Ship> getMyShips() {
         return myShips;

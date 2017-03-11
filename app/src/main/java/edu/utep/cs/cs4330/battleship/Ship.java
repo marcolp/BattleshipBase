@@ -8,6 +8,19 @@ import java.util.ArrayList;
  */
 
 public class Ship {
+
+
+    public enum Type {
+        AIRCRAFT_CARRIER("Aircraft Carrier"), BATTLESHIP("Battleship"), FRIGATE("Frigate"), SUBMARINE("Submarine"), MINESWEEPER("Minesweeper");
+        private String name;
+        private Type(String value){
+            this.name = value;
+        }
+    }
+
+
+    private boolean orientation; //true for horizontal, false for vertical. Default true
+    private Type shipType;
     private int size;
     private ArrayList<Place> location;
     private boolean sunk;
@@ -16,13 +29,33 @@ public class Ship {
         this.size = -1;
         this.location = new ArrayList<Place>();
         this.sunk = false;
+        shipType = null;
     }
 
     public Ship(int size){
         this.size = size;
         this.location = new ArrayList<Place>();
         this.sunk = false;
+        orientation = true;
     }
+
+    public boolean isOrientation() {
+        return orientation;
+    }
+
+    public void setOrientation(boolean orientation) {
+        this.orientation = orientation;
+    }
+
+    public Type getShipType() {
+        return shipType;
+    }
+
+    public void setShipType(Type shipType) {
+        this.shipType = shipType;
+    }
+
+
 
     public int getSize() {
         return this.size;
@@ -52,4 +85,6 @@ public class Ship {
     public void setSunk(boolean sunk) {
         this.sunk = sunk;
     }
+
+
 }
