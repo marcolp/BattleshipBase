@@ -1,5 +1,6 @@
 package edu.utep.cs.cs4330.battleship;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -14,9 +15,11 @@ import java.util.Random;
  * and y is a row index. A place of the board can be shot at, resulting
  * in either a hit or miss.
  *
+ * Implement Serializable to be able to pass through intent
+ *
  * This is the model class in the MVC
  */
-public class Board {
+public class Board implements Serializable{
 
     /**
      * Size of this board. This board has

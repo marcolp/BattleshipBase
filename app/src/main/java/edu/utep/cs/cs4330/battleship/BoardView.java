@@ -231,9 +231,13 @@ public class BoardView extends View {
      */
     private void drawShips(Canvas canvas){
         for (Place currentPlace : board.places()) {
-            if (currentPlace.isShip())
-
+            if (currentPlace.isShip()) {
                 canvas.drawRect((currentPlace.getX()) * lineGap() + 2, (currentPlace.getY()) * lineGap() + 2, (currentPlace.getX() + 1) * lineGap(), (currentPlace.getY() + 1) * lineGap(), greenPaint);
+
+                //TODO ship outline
+//                canvas.drawLine(currentPlace.getX(), currentPlace.getY(), currentPlace.getX()*lineGap(), currentPlace.getY()+2, shotPaint); // horizontal line
+//                canvas.drawLine(xy, 0, xy, maxCoord, boardLinePaint); // vertical line
+            }
         }
     }
 

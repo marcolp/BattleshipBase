@@ -1,29 +1,14 @@
 package edu.utep.cs.cs4330.battleship;
 
-import android.widget.AdapterView.OnItemSelectedListener;
-import android.app.Dialog;
-import android.graphics.Canvas;
-import android.graphics.drawable.Drawable;
-import android.media.AudioManager;
-import android.media.MediaPlayer;
-import android.media.SoundPool;
-import android.support.annotation.Nullable;
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.util.SparseIntArray;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.MediaController;
 import android.widget.Spinner;
-import android.widget.TextView;
 import android.widget.Toast;
-
 import java.util.ArrayList;
 
 /** Marco Lopez
@@ -39,7 +24,6 @@ public class MainActivity extends AppCompatActivity{
     BoardView humanBoardView;
     Board humanBoard;
     final int boardSize = 10;
-    RectangleDrawableView rectView;
     Spinner spinner;
 
     @Override
@@ -60,36 +44,6 @@ public class MainActivity extends AppCompatActivity{
         humanBoardView.setBoard(humanBoard);
         humanBoardView.setFirstActivity(true);
         initialPlacing();
-        rectView = new RectangleDrawableView(this);
-
-//        humanBoardView.addBoardTouchListener(new BoardView.BoardTouchListener() {
-//            @Override
-//            public void onTouch(int x, int y) {
-//                Place paceShot = humanBoard.getPlace(x,y);
-//                if(!paceShot.isHit()) {
-//                    /**Make a shot on the humanBoard*/
-//                    humanBoard.makeShot(x, y);
-//
-//
-//                        if (paceShot.isShip()) {
-//                            soundPool.play(2, 1, 1, 1, 0, 1.0f);
-//                            if (humanBoard.getShip(paceShot).isSunk()) {
-//                                soundPool.play(3, 1, 1, 1, 0, 1.0f);
-//                            }
-//                        }
-//
-//
-//                        boardView.createGameOverDialog();
-//                        humanBoard = new Board(boardSize);
-//                        boardView.setBoard(humanBoard);
-//                        boardView.redraw();
-//                        boardView.updateShotNumber(0);
-//
-//                        toast(String.format("Touched: %d, %d", x, y));
-//
-//                }
-//            }
-//        });
 
         spinner = (Spinner) findViewById(R.id.ship_spinner);
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.ships_array, android.R.layout.simple_spinner_item);
@@ -141,30 +95,32 @@ public class MainActivity extends AppCompatActivity{
 
             }
         });
-
-//        spinner;
-
-
-
     }
 
     /**
      * Move buttons method
-     * @param view
+     * @param view - The button pressed
      */
     public void moveShip(View view){
         switch(view.getId()){
             case R.id.move_left:
-
+                moveShip(-1,0);
+                humanBoardView.redraw();
                 break;
 
             case R.id.move_right:
+                moveShip(1,0);
+                humanBoardView.redraw();
                 break;
 
             case R.id.move_up:
+                moveShip(0,-1);
+                humanBoardView.redraw();
                 break;
 
             case R.id.move_down:
+                moveShip(0,1);
+                humanBoardView.redraw();
                 break;
 
             case R.id.rotateLeft:
@@ -179,12 +135,64 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
+    private boolean moveShip(int rowAmount, int colAmount){
+        ArrayList<Place> places = currentShip.getLocation();
+        int row;
+        int col;
+        ArrayList<Place> newLocation = new ArrayList<Place>();
+        for(Place currentPlace : places){
+            row = currentPlace.getX();
+            col = currentPlace.getY();
+
+            if(row + rowAmount < 0 || row + rowAmount > humanBoard.getSize()-1 || col + colAmount < 0 || col + colAmount > humanBoard.getSize()-1){
+                Toast.makeText(getApplicationContext(), "Invalid movement, out of board.", Toast.LENGTH_SHORT).show();
+                return false;
+            }
+
+            Place newPlace = new Place();
+            newPlace = humanBoard.getPlace(row+rowAmount, col+colAmount);
+
+            if (!currentShip.getLocation().contains(newPlace) && newPlace.isShip()) {
+                Toast.makeText(getApplicationContext(), "Invalid movement, other ship in the way.", Toast.LENGTH_SHORT).show();
+                return false;
+            }
+
+            newLocation.add(newPlace);
+        }
+
+
+        for(Place currentPlace : places){
+            row = currentPlace.getX();
+            col = currentPlace.getY();
+
+
+            if(!newLocation.contains(currentPlace)) {
+                currentPlace.setShip(false);
+            }
+
+            Place newPlace = new Place();
+            newPlace = humanBoard.getPlace(row+rowAmount, col+colAmount);
+            newPlace.setShip(true);
+        }
+
+        currentShip.setLocation(newLocation);
+
+        return true;
+    }
+
+
     /**
      * Called when user pushes the "DONE" button
-     * @param view
+     * @param view - The button pressed
      */
     public void placeShips(View view){
+        Intent intent = new Intent(getBaseContext(), GameWindow.class);
+//        intent.putExtra("human_player", "Test2");
+//        intent.putExtra("human_player", "Test");
+//        intent.putExtra("human_player", humanPlayer);
+//        intent.putExtra("human_board", humanBoard);
 
+        startActivity(intent);
     }
 
     /**
@@ -204,9 +212,9 @@ public class MainActivity extends AppCompatActivity{
 
     /**
      * Change ship orientation
-     * @return
+     * @return true if the ship was able to rotate successfully, false otherwise
      */
-    public boolean rotate(Ship rotatingShip){
+    private boolean rotate(Ship rotatingShip){
 
         int amount = rotatingShip.getSize()/2;
 
@@ -218,10 +226,12 @@ public class MainActivity extends AppCompatActivity{
 
             //Traverse each place checking whether or not each place will go out of bounds from the board
             for(Place currentPlace : rotatingShip.getLocation()){
+
+                //Get current coordinates in order to increase or decrease them depending on <amount>
                 int row = currentPlace.getX();
                 int col = currentPlace.getY();
 
-                //If the new coordinates for the place go out of bounds return true and display a message
+                //If the new coordinates for the place go out of bounds return false and display a message
                 if(row + amount > humanBoard.getSize()-1 || row + amount < 0 || col + amount > humanBoard.getSize()-1 || col + amount < 0) {
                     Toast.makeText(getApplicationContext(), "Invalid Rotation, out of board.", Toast.LENGTH_SHORT).show();
                     return false;
@@ -248,7 +258,7 @@ public class MainActivity extends AppCompatActivity{
         if(!rotatingShip.isOrientation()){
             amount = -amount;
         }
-            ArrayList<Place> newLocations = new ArrayList<Place>();
+            ArrayList<Place> newLocations = new ArrayList<>();
 
             for(Place currentPlace : rotatingShip.getLocation()){
                 currentPlace.setShip(false);

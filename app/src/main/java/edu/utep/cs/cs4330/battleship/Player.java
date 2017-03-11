@@ -1,12 +1,16 @@
 package edu.utep.cs.cs4330.battleship;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
  * Created by LopezMarcoA on 3/9/2017.
+ *
+ * Implement Serializable to be able to pass through intent
+ *
  */
 
-public class Player {
+public class Player implements Serializable{
 
 
     ArrayList<Ship> myShips;

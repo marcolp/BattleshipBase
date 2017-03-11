@@ -1,5 +1,6 @@
 package edu.utep.cs.cs4330.battleship;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 /** Marco Lopez
@@ -7,7 +8,7 @@ import java.util.ArrayList;
  * 2/14/2017
  */
 
-public class Ship {
+public class Ship implements Serializable{
 
 
     public enum Type {
