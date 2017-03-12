@@ -49,20 +49,26 @@ public class Strategy {
             int col = toShoot.getX();
             int row = toShoot.getY();
 
-            if (col + 1 < attackBoard.getSize() - 1) {
-                targetPlaces.add(attackBoard.getPlace(row, col + 1));
+            if (col + 1 <= attackBoard.getSize() - 1 && toAttack.contains(attackBoard.getPlace(col + 1, row))) {
+                Place possibleShip = attackBoard.getPlace(col + 1, row);
+                targetPlaces.add(possibleShip);
+                toAttack.remove(possibleShip);
             }
 
-            if (col - 1 > 0) {
-                targetPlaces.add(attackBoard.getPlace(row, col - 1));
-            }
+            if (col - 1 >= 0 && toAttack.contains(attackBoard.getPlace(col - 1, row))) {
+                Place possibleShip = attackBoard.getPlace(col - 1, row);
+                targetPlaces.add(possibleShip);
+                toAttack.remove(possibleShip);            }
 
-            if (row + 1 < attackBoard.getSize() - 1) {
-                targetPlaces.add(attackBoard.getPlace(row + 1, col));
-            }
+            if (row + 1 <= attackBoard.getSize() - 1 && toAttack.contains(attackBoard.getPlace(col, row + 1))) {
+                Place possibleShip = attackBoard.getPlace(col, row + 1);
+                targetPlaces.add(possibleShip);
+                toAttack.remove(possibleShip);            }
 
-            if (!(row - 1 > 0)) {
-                targetPlaces.add(attackBoard.getPlace(row - 1, col));
+            if (row - 1 >= 0 && toAttack.contains(attackBoard.getPlace(col, row - 1))) {
+                Place possibleShip = attackBoard.getPlace(col, row - 1);
+                targetPlaces.add(possibleShip);
+                toAttack.remove(possibleShip);
             }
         }
 

@@ -16,7 +16,7 @@ import android.widget.Toast;
  *
  * This is the controller in the MVC
  */
-public class GameWindow extends AppCompatActivity{
+public class GameWindow extends AppCompatActivity implements Observer{
 
     private Board playerBoard;
     private BoardView playerBoardView;
@@ -55,6 +55,8 @@ public class GameWindow extends AppCompatActivity{
 
         //Views must have other player's board in order to indicate they are shooting at opponent
         opponentBoardView.setBoard(playerBoard);
+
+        Game.getInstance().addObserver(this);
 
         playerBoardView.setBoard(opponentBoard);
         playerBoardView.setFirstActivity(false);
@@ -242,4 +244,15 @@ public class GameWindow extends AppCompatActivity{
         super.onDestroy();
     }
 
+
+    /**=======================Observer stuff===============================*/
+    @Override
+    public void update() {
+        runOnUiThread(new Runnable(){
+            @Override
+            public void run() {
+                opponentBoardView.redraw();
+            }
+        });
+    }
 }

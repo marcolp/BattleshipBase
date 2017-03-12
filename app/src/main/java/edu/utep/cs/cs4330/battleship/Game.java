@@ -2,6 +2,7 @@ package edu.utep.cs.cs4330.battleship;
 
 import android.widget.Toast;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 /**
@@ -9,7 +10,7 @@ import java.util.ArrayList;
  * Created by marcolopez on 2/28/17.
  */
 
-public class Game {
+public class Game implements Observable{
 
     int numShots; //integer representing the number of shots human player has made
 
@@ -86,6 +87,7 @@ public class Game {
         }   catch (InterruptedException e) {
         }
         boolean hit = computerPlayer.makeMove();
+        notifyObserver();
         if (!isGameOver()) {
             if (hit) {
                 makeComputerShot();
@@ -121,5 +123,27 @@ public class Game {
         if(currentTurn == 1) currentTurn = 2;
         else if(currentTurn == 2) currentTurn = 1;
         return currentTurn;
+    }
+
+
+    /**=================================Observer stuff======================================*/
+
+    private ArrayList<Observer> activities = new ArrayList<Observer>();
+
+    @Override
+    public void addObserver(Observer o) {
+        activities.add(o);
+    }
+
+    @Override
+    public void removeObserver(Observer o) {
+        activities.remove(o);
+    }
+
+    @Override
+    public void notifyObserver() {
+        for(Observer current : activities){
+            current.update();
+        }
     }
 }
