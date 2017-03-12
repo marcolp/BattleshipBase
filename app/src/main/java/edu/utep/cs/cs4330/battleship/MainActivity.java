@@ -34,9 +34,7 @@ public class MainActivity extends AppCompatActivity{
         setContentView(R.layout.activity_main);
 
         humanPlayer = new Player();
-
         humanBoard = new Board(boardSize);
-
 
         humanPlayer.setMyBoard(humanBoard);
 
@@ -95,6 +93,10 @@ public class MainActivity extends AppCompatActivity{
 
             }
         });
+
+        Game.getInstance().addPlayer(humanPlayer);
+        ComputerPlayer opponent = new ComputerPlayer();
+        Game.getInstance().addComputer(opponent);
     }
 
     /**
@@ -200,7 +202,7 @@ public class MainActivity extends AppCompatActivity{
      */
     private void initialPlacing(){
         int count = 0;
-        for(Ship currentShip : humanPlayer.myShips){
+        for(Ship currentShip : humanPlayer.getMyShips()){
             for(int i = 0; i < currentShip.getSize(); i++){
                 Place currentPlace = humanBoard.getPlace(i,count);
                 currentPlace.setShip(true);

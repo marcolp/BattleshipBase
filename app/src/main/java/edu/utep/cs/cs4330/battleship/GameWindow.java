@@ -48,63 +48,72 @@ public class GameWindow extends AppCompatActivity{
 
         soundOption = true;
 
-        Player humanPlayer = (Player)(getIntent().getSerializableExtra("human_player"));
-        playerBoard = (Board)(getIntent().getSerializableExtra("human_board"));
+        Player player = Game.getInstance().getPlayer(1);
+        Board playerBoard = player.getMyBoard();
+
         playerBoardView = (BoardView) findViewById(R.id.playerView);
+
+        //This cast can be dangerous
+        ComputerPlayer opponent = (ComputerPlayer)Game.getInstance().getPlayer(2);
+        Board opponentBoard = new Board(boardSize);
+        opponent.setMyBoard(opponentBoard);
 
         opponentBoardView = (BoardView) findViewById(R.id.opponentView);
 
-//        boardView.setShotsTextView((TextView) findViewById(R.id.numShots));
-//        configureSounds();
-//
-//
-//        boardView.addBoardTouchListener(new BoardView.BoardTouchListener() {
-//            @Override
-//            public void onTouch(int x, int y) {
-//                Place paceShot = board.getPlace(x,y);
-//                if(!paceShot.isHit()) {
-//                    /**Make a shot on the board*/
-//                    board.makeShot(x, y);
-//
-//                    if(soundOption) {
-//                        if (paceShot.isShip()) {
-//                            soundPool.play(2, 1, 1, 1, 0, 1.0f);
-//                            if (board.getShip(paceShot).isSunk()) {
-//                                soundPool.play(3, 1, 1, 1, 0, 1.0f);
-//                            }
-//                        }
-//                    }
-//                    /**Update the number of shots that have been made in the view*/
-//                    boardView.updateShotNumber(board.getNumOfShots());
-//
-//                    if (board.isGameOver()) {
-//                        if(soundOption) {
-//                            soundPool.play(1, 1, 1, 1, 0, 1.0f);
-//                        }
-//                        boardView.createGameOverDialog();
-//                        board = new Board(boardSize);
-//                        boardView.setBoard(board);
-//                        boardView.redraw();
-//                        boardView.updateShotNumber(0);
-//                    } else {
-//                        toast(String.format("Touched: %d, %d", x, y));
-//                    }
-//                }
-//            }
-//        });
-//
-//        boardView.setNewButton((Button)findViewById(R.id.newButton));
-//        boardView.setButtonListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                boardView.createNewGameDialog();
-//                board = new Board(boardSize);
-//                boardView.setBoard(board);
-//                boardView.redraw();
-//                boardView.updateShotNumber(0);
-//            }
-//        });
-//
+        //Views must have other player's board in order to indicate they are shooting at opponent
+        opponentBoardView.setBoard(playerBoard);
+        playerBoardView.setBoard(opponentBoard);
+
+
+        configureSounds();
+
+        playerBoardView.addBoardTouchListener(new BoardView.BoardTouchListener() {
+            @Override
+            public void onTouch(int x, int y) {
+                Game.getInstance().makePlayerShot(opponentBoard.getPlace(x,y));
+                if(!paceShot.isHit()) {
+                    /**Make a shot on the board*/
+                    board.makeShot(x, y);
+
+                    if(soundOption) {
+                        if (paceShot.isShip()) {
+                            soundPool.play(2, 1, 1, 1, 0, 1.0f);
+                            if (board.getShip(paceShot).isSunk()) {
+                                soundPool.play(3, 1, 1, 1, 0, 1.0f);
+                            }
+                        }
+                    }
+                    /**Update the number of shots that have been made in the view*/
+                    boardView.updateShotNumber(board.getNumOfShots());
+
+                    if (board.isGameOver()) {
+                        if(soundOption) {
+                            soundPool.play(1, 1, 1, 1, 0, 1.0f);
+                        }
+                        boardView.createGameOverDialog();
+                        board = new Board(boardSize);
+                        boardView.setBoard(board);
+                        boardView.redraw();
+                        boardView.updateShotNumber(0);
+                    } else {
+                        toast(String.format("Touched: %d, %d", x, y));
+                    }
+                }
+            }
+        });
+
+        boardView.setNewButton((Button)findViewById(R.id.newButton));
+        boardView.setButtonListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                boardView.createNewGameDialog();
+                board = new Board(boardSize);
+                boardView.setBoard(board);
+                boardView.redraw();
+                boardView.updateShotNumber(0);
+            }
+        });
+
 
     }
 

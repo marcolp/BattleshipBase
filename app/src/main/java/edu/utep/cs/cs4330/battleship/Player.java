@@ -12,10 +12,32 @@ import java.util.ArrayList;
 
 public class Player implements Serializable{
 
+    private ArrayList<Ship> myShips;
+    private Board myBoard;
+    private int playerNumber; //int value indicating which player this is
 
-    ArrayList<Ship> myShips;
-    Board myBoard;
-    int playerNumber; //int value indicating which player this is
+    Player(int number){
+        Ship aircraftCarrier = new Ship(5);
+        Ship battleship = new Ship(4);
+        Ship frigate = new Ship(3);
+        Ship submarine = new Ship(3);
+        Ship minesweeper = new Ship(2);
+
+        aircraftCarrier.setShipType(Ship.Type.AIRCRAFT_CARRIER);
+        battleship.setShipType(Ship.Type.BATTLESHIP);
+        frigate.setShipType(Ship.Type.FRIGATE);
+        submarine.setShipType(Ship.Type.SUBMARINE);
+        minesweeper.setShipType(Ship.Type.MINESWEEPER);
+
+        myShips = new ArrayList<Ship>();
+        myShips.add(aircraftCarrier);
+        myShips.add(battleship);
+        myShips.add(frigate);
+        myShips.add(submarine);
+        myShips.add(minesweeper);
+
+        playerNumber = number;
+    }
 
     Player(){
         Ship aircraftCarrier = new Ship(5);
@@ -39,7 +61,6 @@ public class Player implements Serializable{
 
         playerNumber = 0;
     }
-
     /**
      * Update ship's places to see if it is sunk
      */
