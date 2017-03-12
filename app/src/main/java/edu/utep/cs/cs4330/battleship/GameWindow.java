@@ -39,82 +39,98 @@ public class GameWindow extends AppCompatActivity{
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        Log.d("Main Activity", "This is the onCreate method");
 
-        setContentView(R.layout.activity_main);
+        super.onCreate(savedInstanceState);
+        Log.d("Game Window", "This is the onCreate method");
+        setContentView(R.layout.activity_game_window);
 
         final int boardSize = 10;
 
         soundOption = true;
 
-        Player player = Game.getInstance().getPlayer(1);
+        Player player = Game.getInstance().getPlayer();
         Board playerBoard = player.getMyBoard();
 
         playerBoardView = (BoardView) findViewById(R.id.playerView);
 
-        //This cast can be dangerous
-        ComputerPlayer opponent = (ComputerPlayer)Game.getInstance().getPlayer(2);
+        ComputerPlayer opponent = Game.getInstance().getComputerPlayer();
         Board opponentBoard = new Board(boardSize);
         opponent.setMyBoard(opponentBoard);
 
         opponentBoardView = (BoardView) findViewById(R.id.opponentView);
+        opponentBoardView.setFirstActivity(false);
 
         //Views must have other player's board in order to indicate they are shooting at opponent
         opponentBoardView.setBoard(playerBoard);
         playerBoardView.setBoard(opponentBoard);
-
+        playerBoardView.setFirstActivity(false);
 
         configureSounds();
 
         playerBoardView.addBoardTouchListener(new BoardView.BoardTouchListener() {
             @Override
             public void onTouch(int x, int y) {
-                Game.getInstance().makePlayerShot(opponentBoard.getPlace(x,y));
-                if(!paceShot.isHit()) {
-                    /**Make a shot on the board*/
-                    board.makeShot(x, y);
 
-                    if(soundOption) {
-                        if (paceShot.isShip()) {
-                            soundPool.play(2, 1, 1, 1, 0, 1.0f);
-                            if (board.getShip(paceShot).isSunk()) {
-                                soundPool.play(3, 1, 1, 1, 0, 1.0f);
+                //Only allow show it if it the player's turn
+                if(Game.getInstance().hasTurn(player)){
+
+                    Place placeShot = opponentBoard.getPlace(x, y);
+
+                    //If the player shoots a place already shot then do nothing.
+                    if(!placeShot.isHit()) {
+
+                        /**Make a shot on the board*/
+                        boolean hitShip = Game.getInstance().makePlayerShot(placeShot);
+
+                        //If sound option is on play sounds
+                        if(soundOption) {
+
+                            //If it hit a ship play a sound
+                            if (hitShip) {
+                                soundPool.play(2, 1, 1, 1, 0, 1.0f);
+
+                                /**If the shot sunk a ship play another sound
+                                 * and check if the game is over.
+                                 */
+                                if (opponent.getShip(placeShot).isSunk()) {
+                                    soundPool.play(3, 1, 1, 1, 0, 1.0f);
+
+                                    if (Game.getInstance().isGameOver()) {
+                                        if(soundOption) {
+                                            soundPool.play(1, 1, 1, 1, 0, 1.0f);
+                                        }
+
+                                        playerBoardView.createGameOverDialog();
+
+                                        //TODO RESET game by going back to activity 1;
+//                                        board = new Board(boardSize);
+//                                        boardView.setBoard(board);
+//                                        boardView.redraw();
+//                                        boardView.updateShotNumber(0);
+                                    }
+                                    else {
+                                        toast(String.format("Touched: %d, %d", x, y));
+                                    }
+                                }
                             }
                         }
-                    }
-                    /**Update the number of shots that have been made in the view*/
-                    boardView.updateShotNumber(board.getNumOfShots());
-
-                    if (board.isGameOver()) {
-                        if(soundOption) {
-                            soundPool.play(1, 1, 1, 1, 0, 1.0f);
-                        }
-                        boardView.createGameOverDialog();
-                        board = new Board(boardSize);
-                        boardView.setBoard(board);
-                        boardView.redraw();
-                        boardView.updateShotNumber(0);
-                    } else {
-                        toast(String.format("Touched: %d, %d", x, y));
                     }
                 }
             }
         });
 
-        boardView.setNewButton((Button)findViewById(R.id.newButton));
-        boardView.setButtonListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                boardView.createNewGameDialog();
-                board = new Board(boardSize);
-                boardView.setBoard(board);
-                boardView.redraw();
-                boardView.updateShotNumber(0);
-            }
-        });
-
-
+//        boardView.setNewButton((Button)findViewById(R.id.newButton));
+//        boardView.setButtonListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                boardView.createNewGameDialog();
+//                board = new Board(boardSize);
+//                boardView.setBoard(board);
+//                boardView.redraw();
+//                boardView.updateShotNumber(0);
+//            }
+//        });
+        Log.d("Game window", "This is the onPause method");
     }
 
     private void configureSounds(){

@@ -12,8 +12,8 @@ import java.util.ArrayList;
 
 public class Player implements Serializable{
 
-    private ArrayList<Ship> myShips;
-    private Board myBoard;
+    protected ArrayList<Ship> myShips;
+    protected Board myBoard;
     private int playerNumber; //int value indicating which player this is
 
     Player(int number){
@@ -94,7 +94,18 @@ public class Player implements Serializable{
         return true;
     }
 
-//    public Ship getShipByType;
+    /**
+     * Check if the player's ships are in the specified place
+     *
+     * @param place - place to look for
+     * @return - The ship if found, null otherwise
+     */
+    public Ship getShip(Place place){
+        for(Ship currentShip : myShips){
+            if(currentShip.getLocation().contains(place)) return currentShip;
+        }
+        return null;
+    }
 
     public ArrayList<Ship> getMyShips() {
         return myShips;

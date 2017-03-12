@@ -1,5 +1,7 @@
 package edu.utep.cs.cs4330.battleship;
 
+import android.widget.Toast;
+
 import java.util.ArrayList;
 
 /**
@@ -30,13 +32,13 @@ public class Game {
         }
 
         else{
-            //TODO may need an else here
+            //TODO something here?
         }
     }
 
     public void addComputer(ComputerPlayer newComputer){
         if(computerPlayer == null){
-            computerPlayer = newComputer
+            computerPlayer = newComputer;
         }
 
         else{
@@ -60,26 +62,64 @@ public class Game {
         return computerPlayer;
     }
 
-    public void makePlayerShot(Place place){
+    /**
+     * Make player's shot
+     *
+     * @param place - location to shoot
+     * @return - true if the player hit a ship, false otherwise
+     */
+    public boolean makePlayerShot(Place place){
         place.setHit(true);
         if(!isGameOver() && !place.isShip()){
             changeTurn();
             new Thread(this::makeComputerShot).start();
+            numShots++;
+            return false;
         }
+        numShots++;
+        return true;
     }
-//
-//    private void makeComputerShot() {
-//        try {
-//            Thread.sleep(500);
-//        }   catch (InterruptedException e) {
-//        }
-//
+
+    private void makeComputerShot() {
+        try {
+            Thread.sleep(500);
+        }   catch (InterruptedException e) {
+        }
 //        boolean hit = opponent().makeMove();
-//    }
-//
-    private boolean isGameOver(){
-        if(player1.allSunk() || player2.allSunk())
+//        if (!isGameOver()) {
+//            if (hit) {
+//                makeComputerShot();
+//            } else {
+//                changeTurn();
+//            }
+//        }
+        numShots++;
+    }
+
+    public boolean isGameOver(){
+        if(player1.allSunk() || computerPlayer.allSunk())
             return true;
         else return false;
+    }
+
+    /**
+     * Check if it is the passed player's turn
+     *
+     * @param player
+     * @return true if it is the player's true, false otherwise
+     */
+    public boolean hasTurn(Player player){
+        if(player.getPlayerNumber() == currentTurn) return true;
+        else return false;
+    }
+
+    /**
+     * Change the turn to the other player
+     * @return the current turn indicator
+     */
+    private int changeTurn(){
+        if(currentTurn == 1) currentTurn = 2;
+        else if(currentTurn == 2) currentTurn = 1;
+        return currentTurn;
     }
 }
