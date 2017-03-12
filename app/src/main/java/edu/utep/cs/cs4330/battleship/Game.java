@@ -85,14 +85,14 @@ public class Game {
             Thread.sleep(500);
         }   catch (InterruptedException e) {
         }
-//        boolean hit = opponent().makeMove();
-//        if (!isGameOver()) {
-//            if (hit) {
-//                makeComputerShot();
-//            } else {
-//                changeTurn();
-//            }
-//        }
+        boolean hit = computerPlayer.makeMove();
+        if (!isGameOver()) {
+            if (hit) {
+                makeComputerShot();
+            } else {
+                changeTurn();
+            }
+        }
         numShots++;
     }
 

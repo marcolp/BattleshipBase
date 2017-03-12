@@ -37,6 +37,8 @@ public class Player implements Serializable{
         myShips.add(minesweeper);
 
         playerNumber = number;
+
+        myBoard = new Board(10);
     }
 
     Player(){

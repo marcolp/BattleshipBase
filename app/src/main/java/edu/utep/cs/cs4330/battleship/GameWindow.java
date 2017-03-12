@@ -1,20 +1,13 @@
 package edu.utep.cs.cs4330.battleship;
 
-import android.app.Dialog;
 import android.media.AudioManager;
-import android.media.MediaPlayer;
 import android.media.SoundPool;
-import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.SparseIntArray;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.Button;
-import android.widget.MediaController;
-import android.widget.TextView;
 import android.widget.Toast;
 
 /** Marco Lopez
@@ -45,8 +38,9 @@ public class GameWindow extends AppCompatActivity{
         setContentView(R.layout.activity_game_window);
 
         final int boardSize = 10;
-
         soundOption = true;
+
+        Game.getInstance().currentTurn = 1;
 
         Player player = Game.getInstance().getPlayer();
         Board playerBoard = player.getMyBoard();
@@ -54,14 +48,14 @@ public class GameWindow extends AppCompatActivity{
         playerBoardView = (BoardView) findViewById(R.id.playerView);
 
         ComputerPlayer opponent = Game.getInstance().getComputerPlayer();
-        Board opponentBoard = new Board(boardSize);
-        opponent.setMyBoard(opponentBoard);
+        opponentBoard = opponent.myBoard;
 
         opponentBoardView = (BoardView) findViewById(R.id.opponentView);
         opponentBoardView.setFirstActivity(false);
 
         //Views must have other player's board in order to indicate they are shooting at opponent
         opponentBoardView.setBoard(playerBoard);
+
         playerBoardView.setBoard(opponentBoard);
         playerBoardView.setFirstActivity(false);
 

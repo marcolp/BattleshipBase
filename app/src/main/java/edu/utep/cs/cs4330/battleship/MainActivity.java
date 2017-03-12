@@ -33,8 +33,8 @@ public class MainActivity extends AppCompatActivity{
 
         setContentView(R.layout.activity_main);
 
-        humanPlayer = new Player();
-        humanBoard = new Board(boardSize);
+        humanPlayer = new Player(1);
+        humanBoard = humanPlayer.getMyBoard();
 
         humanPlayer.setMyBoard(humanBoard);
 
@@ -95,7 +95,11 @@ public class MainActivity extends AppCompatActivity{
         });
 
         Game.getInstance().addPlayer(humanPlayer);
-        ComputerPlayer opponent = new ComputerPlayer();
+        humanPlayer.setPlayerNumber(1);
+
+        ComputerPlayer opponent = new ComputerPlayer(2);
+        opponent.placeShips();
+        opponent.setPlayerNumber(2);
         Game.getInstance().addComputer(opponent);
     }
 

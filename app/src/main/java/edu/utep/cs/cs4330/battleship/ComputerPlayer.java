@@ -10,15 +10,20 @@ public class ComputerPlayer extends Player{
 
     Strategy strat;
 
-    ComputerPlayer(){
+    ComputerPlayer(int number){
+        super(number);
+        strat = new Strategy(super.myBoard);
+    }
 
+    public boolean makeMove(){
+        return strat.makeMove();
     }
 
     /**
      * Method to randomly place ships
      * @return
      */
-    private boolean placeShips(){
+    public boolean placeShips(){
         Random rand = new Random();
 
         //Traverse all ships to place them all
@@ -38,6 +43,7 @@ public class ComputerPlayer extends Player{
                 placed = placeShip(currentShip, x, y, direction);
             }
         }
+        strat.setUp();
         return true;
     }
 
