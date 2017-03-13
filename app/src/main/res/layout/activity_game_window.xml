@@ -8,18 +8,14 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
+
     tools:context="edu.utep.cs.cs4330.battleship.GameWindow">
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
-            <Button
-                android:text="@string/new_button_label"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/newButton"
-                android:layout_alignParentRight="true"/>
+
 
             <TextView
                 android:id="@+id/numShots"
@@ -27,7 +23,6 @@
                 android:layout_height="wrap_content"
                 android:text="Number of Shots: 0"
                 android:layout_marginTop="0dp"
-                android:layout_below="@id/newButton"
                 android:layout_alignParentRight="true"/>
 
             <TextView
