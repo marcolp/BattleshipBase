@@ -193,12 +193,8 @@ public class MainActivity extends AppCompatActivity{
      */
     public void placeShips(View view){
         Intent intent = new Intent(getBaseContext(), GameWindow.class);
-//        intent.putExtra("human_player", "Test2");
-//        intent.putExtra("human_player", "Test");
-//        intent.putExtra("human_player", humanPlayer);
-//        intent.putExtra("human_board", humanBoard);
-
         startActivity(intent);
+        finish();
     }
 
     /**

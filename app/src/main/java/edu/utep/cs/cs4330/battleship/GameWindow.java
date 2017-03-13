@@ -1,5 +1,7 @@
 package edu.utep.cs.cs4330.battleship;
 
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.support.v7.app.AppCompatActivity;
@@ -8,7 +10,10 @@ import android.util.Log;
 import android.util.SparseIntArray;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import org.w3c.dom.Text;
 
 /** Marco Lopez
  * CS 5390 - Mobile Application Development
@@ -17,6 +22,9 @@ import android.widget.Toast;
  * This is the controller in the MVC
  */
 public class GameWindow extends AppCompatActivity implements Observer{
+
+    private TextView turnText;
+    private TextView shotText;
 
     private Board playerBoard;
     private BoardView playerBoardView;
@@ -41,6 +49,9 @@ public class GameWindow extends AppCompatActivity implements Observer{
         soundOption = true;
 
         Game.getInstance().currentTurn = 1;
+
+        turnText = (TextView) findViewById(R.id.turnText);
+        shotText = (TextView) findViewById(R.id.numShots);
 
         Player player = Game.getInstance().getPlayer();
         Board playerBoard = player.getMyBoard();
@@ -70,6 +81,8 @@ public class GameWindow extends AppCompatActivity implements Observer{
                 //Only allow show it if it the player's turn
                 if(Game.getInstance().hasTurn(player)){
 
+                    turnText.setText("Current turn: \nPlayer "+Game.getInstance().currentTurn);
+
                     Place placeShot = opponentBoard.getPlace(x, y);
 
                     //If the player shoots a place already shot then do nothing.
@@ -96,9 +109,19 @@ public class GameWindow extends AppCompatActivity implements Observer{
                                             soundPool.play(1, 1, 1, 1, 0, 1.0f);
                                         }
 
-                                        playerBoardView.createGameOverDialog();
+                                        playerBoardView.createGameOverDialog("All ships sunk! You Win!");
+                                        playerBoardView.gameOverDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                                            @Override
+                                            public void onDismiss(DialogInterface dialog) {
+                                                finish();
+                                                System.exit(0);
+                                            }
+                                        });
+
 
                                         //TODO RESET game by going back to activity 1;
+//                                        Intent intent = new Intent(getBaseContext(), MainActivity.class);
+//                                        startActivity(intent);
 //                                        board = new Board(boardSize);
 //                                        boardView.setBoard(board);
 //                                        boardView.redraw();
@@ -128,6 +151,7 @@ public class GameWindow extends AppCompatActivity implements Observer{
 //        });
         Log.d("Game window", "This is the onPause method");
     }
+
 
     private void configureSounds(){
         soundPool = new SoundPool(1, AudioManager.STREAM_MUSIC, 0);
@@ -251,7 +275,19 @@ public class GameWindow extends AppCompatActivity implements Observer{
         runOnUiThread(new Runnable(){
             @Override
             public void run() {
+                turnText.setText("Current turn: \nPlayer "+Game.getInstance().currentTurn);
                 opponentBoardView.redraw();
+                if(Game.getInstance().isGameOver()){
+                    opponentBoardView.createGameOverDialog("All ships sunk! You Lose!");
+                    opponentBoardView.gameOverDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                        @Override
+                        public void onDismiss(DialogInterface dialog) {
+                            finish();
+                            System.exit(0);
+                        }
+                    });
+                }
+
             }
         });
     }

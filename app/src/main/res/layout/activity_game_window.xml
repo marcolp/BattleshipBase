@@ -30,6 +30,14 @@
                 android:layout_below="@id/newButton"
                 android:layout_alignParentRight="true"/>
 
+            <TextView
+                android:id="@+id/turnText"
+                android:layout_below="@id/numShots"
+                android:layout_alignParentRight="true"
+                android:text="Current Turn: "
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
             <edu.utep.cs.cs4330.battleship.BoardView
                 android:id="@+id/opponentView"
                 android:layout_width="match_parent"

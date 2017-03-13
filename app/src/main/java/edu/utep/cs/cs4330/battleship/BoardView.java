@@ -13,6 +13,8 @@ import android.os.Bundle;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -256,7 +258,7 @@ public class BoardView extends View {
     /**=====================================DRAWING STUFF===========================================================*/
 
     /**=====================================DIALOG STUFF============================================================*/
-    private AlertDialog gameOverDialog;
+    public AlertDialog gameOverDialog;
     private AlertDialog newGameDialog;
 
 //    public class NewGameDialogFragment extends DialogFragment {
@@ -288,10 +290,10 @@ public class BoardView extends View {
 //        }
 //
 //    }
-    public void createGameOverDialog(){
+    public void createGameOverDialog(String text){
         AlertDialog.Builder builder1 = new AlertDialog.Builder(this.getContext());
         builder1.setTitle("Game Over!");
-        builder1.setMessage("All ships sunk! You Win!");
+        builder1.setMessage(text);
         builder1.setCancelable(true);
 
         gameOverDialog = builder1.create();
