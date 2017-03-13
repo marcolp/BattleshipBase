@@ -12,7 +12,7 @@ import java.util.ArrayList;
 
 public class Game implements Observable{
 
-    int numShots; //integer representing the number of shots human player has made
+    int numShots = 0; //integer representing the number of shots human player has made
 
     Player player1;
     ComputerPlayer computerPlayer;
@@ -71,13 +71,12 @@ public class Game implements Observable{
      */
     public boolean makePlayerShot(Place place){
         place.setHit(true);
+        numShots++;
         if(!isGameOver() && !place.isShip()){
             changeTurn();
             new Thread(this::makeComputerShot).start();
-            numShots++;
             return false;
         }
-        numShots++;
         return true;
     }
 
@@ -95,7 +94,6 @@ public class Game implements Observable{
                 changeTurn();
             }
         }
-        numShots++;
     }
 
     public boolean isGameOver(){

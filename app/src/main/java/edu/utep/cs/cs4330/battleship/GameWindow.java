@@ -82,7 +82,6 @@ public class GameWindow extends AppCompatActivity implements Observer{
                 if(Game.getInstance().hasTurn(player)){
 
                     turnText.setText("Current turn: \nPlayer "+Game.getInstance().currentTurn);
-
                     Place placeShot = opponentBoard.getPlace(x, y);
 
                     //If the player shoots a place already shot then do nothing.
@@ -90,6 +89,7 @@ public class GameWindow extends AppCompatActivity implements Observer{
 
                         /**Make a shot on the board*/
                         boolean hitShip = Game.getInstance().makePlayerShot(placeShot);
+                        shotText.setText("Number of shots: "+Game.getInstance().numShots);
 
                         //If sound option is on play sounds
                         if(soundOption) {
