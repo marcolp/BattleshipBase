@@ -10,6 +10,7 @@ import android.util.Log;
 import android.util.SparseIntArray;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -49,6 +50,7 @@ public class GameWindow extends AppCompatActivity implements Observer{
         soundOption = true;
 
         Game.getInstance().currentTurn = 1;
+        Game.getInstance().numShots = 0;
 
         turnText = (TextView) findViewById(R.id.turnText);
         shotText = (TextView) findViewById(R.id.numShots);
@@ -89,6 +91,10 @@ public class GameWindow extends AppCompatActivity implements Observer{
 
                         /**Make a shot on the board*/
                         boolean hitShip = Game.getInstance().makePlayerShot(placeShot);
+                        String playerTurn = "";
+                        playerTurn = "Current turn: \nPlayer "+Game.getInstance().currentTurn;
+                        turnText.setText(playerTurn);
+
                         shotText.setText("Number of shots: "+Game.getInstance().numShots);
 
                         //If sound option is on play sounds
@@ -268,6 +274,11 @@ public class GameWindow extends AppCompatActivity implements Observer{
         super.onDestroy();
     }
 
+    public void newGame(View view){
+        Intent intent = new Intent(getBaseContext(), MainActivity.class);
+        startActivity(intent);
+        finish();
+    }
 
     /**=======================Observer stuff===============================*/
     @Override

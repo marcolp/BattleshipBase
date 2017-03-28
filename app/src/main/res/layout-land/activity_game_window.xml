@@ -33,14 +33,26 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
+        <Button
+            android:id="@+id/newGameButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_below="@+id/turnText"
+            android:layout_marginEnd="13dp"
+            android:layout_marginRight="13dp"
+            android:layout_marginTop="34dp"
+            android:text="New Game"
+            android:onClick="newGame"/>
+
         <edu.utep.cs.cs4330.battleship.BoardView
             android:id="@+id/opponentView"
             android:layout_width="150dp"
-            android:layout_weight="1"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:layout_alignParentRight="true"
-            android:layout_below="@id/turnText"/>
+            android:layout_below="@id/newGameButton"/>
 
         <edu.utep.cs.cs4330.battleship.BoardView
             android:id="@+id/playerView"

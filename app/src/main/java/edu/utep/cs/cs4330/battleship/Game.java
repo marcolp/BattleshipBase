@@ -12,6 +12,7 @@ import java.util.ArrayList;
 
 public class Game implements Observable{
 
+
     int numShots = 0; //integer representing the number of shots human player has made
 
     Player player1;
@@ -33,7 +34,7 @@ public class Game implements Observable{
         }
 
         else{
-            //TODO something here?
+            player1 = newPlayer;
         }
     }
 
@@ -43,7 +44,7 @@ public class Game implements Observable{
         }
 
         else{
-            //TODO something here?
+            computerPlayer = newComputer;
         }
     }
     /**
@@ -121,6 +122,14 @@ public class Game implements Observable{
         if(currentTurn == 1) currentTurn = 2;
         else if(currentTurn == 2) currentTurn = 1;
         return currentTurn;
+    }
+
+    public int getNumShots() {
+        return numShots;
+    }
+
+    public void setNumShots(int numShots) {
+        this.numShots = numShots;
     }
 
 
