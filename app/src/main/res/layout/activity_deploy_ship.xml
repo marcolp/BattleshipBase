@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="edu.utep.cs.cs4330.battleship.DeployShipActivity">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/shipText"
+            android:text="Place Ship:"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <Spinner
+            android:id="@+id/ship_spinner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/shipText"
+            android:entries="@array/ships_array"/>
+
+        <ImageButton
+            android:id="@+id/rotateLeft"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_rotate_left_black_24px"
+            android:minHeight="60dp"
+            android:minWidth="60dp"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            android:onClick="moveShip" />
+        />
+
+        <ImageButton
+            android:id="@+id/move_up"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_arrow_up_black_24px"
+            android:minHeight="60dp"
+            android:minWidth="60dp"
+            android:layout_toLeftOf="@id/rotateLeft"
+            android:onClick="moveShip"
+            />
+
+        <ImageButton
+            android:id="@+id/rotateRight"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_rotate_right_black_24px"
+            android:minHeight="60dp"
+            android:minWidth="60dp"
+            android:layout_toLeftOf="@id/move_up"
+            android:onClick="moveShip"
+            />
+
+        <ImageButton
+            android:id="@+id/move_left"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_arrow_left_black_24px"
+            android:minHeight="60dp"
+            android:minWidth="60dp"
+            android:layout_alignLeft="@id/rotateRight"
+            android:layout_below="@id/rotateRight"
+            android:onClick="moveShip"
+            />
+
+        <ImageButton
+            android:id="@+id/move_right"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_arrow_forward_right_24px"
+            android:minHeight="60dp"
+            android:minWidth="60dp"
+            android:layout_below="@id/rotateLeft"
+            android:layout_alignLeft="@id/rotateLeft"
+            android:layout_marginBottom="60dp"
+            android:onClick="moveShip"
+            />
+
+        <ImageButton
+            android:id="@+id/move_down"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_arrow_down_black_24px"
+            android:minHeight="60dp"
+            android:minWidth="60dp"
+            android:layout_toRightOf="@id/move_left"
+            android:layout_alignTop="@id/move_left"
+            android:onClick="moveShip"
+            />
+
+        <Button
+            android:id="@+id/done_button"
+            android:text="Done"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/move_down"
+            android:layout_alignLeft="@+id/move_left"
+            android:layout_alignStart="@+id/move_left"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:onClick="placeShips"
+            />
+
+        <edu.utep.cs.cs4330.battleship.BoardView
+            android:id="@+id/boardView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_below="@id/done_button"
+            />
+
+    </RelativeLayout>
+
+</RelativeLayout>

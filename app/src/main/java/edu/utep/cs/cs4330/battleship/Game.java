@@ -3,7 +3,9 @@ package edu.utep.cs.cs4330.battleship;
 import android.widget.Toast;
 
 import java.lang.reflect.Array;
+import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Random;
 
 /**
  * Using singleton so both activities can access the game
@@ -20,6 +22,11 @@ public class Game implements Observable{
 
     int currentTurn;
 
+
+
+    boolean userClient;
+    boolean userFirst;
+    NetworkAdapter playerConnection;
 
     public static final Game singletonGame = new Game();
 
@@ -65,6 +72,72 @@ public class Game implements Observable{
     }
 
     /**
+     * Creates a NetworkAdapter based on a TCP socket
+     * @param wifiSocket
+     */
+    public void initializeAdapter(Socket wifiSocket){
+        playerConnection = new NetworkAdapter(wifiSocket);
+    }
+
+    /**
+     * Return the NetworkAdapter
+     * @return
+     */
+    public NetworkAdapter getPlayerConnection() {
+        return playerConnection;
+    }
+
+    /**
+     * Creates a fleet message encoded for the NetworkAdapter
+     *
+     * @return int array containing encoded message of the player's ships
+     */
+    public int [] makeFleetMessage(){
+        //Create new fleet message (4 things per ship, 5 ships)
+        int [] fleetMessage = new int [4*5];
+
+        int index = 0;
+
+        /**Traverse all the ships*/
+        for(Ship currentShip : Game.getInstance().player1.getMyShips()){
+
+            //4 entries per ship
+            for(int i = 0; i < 4; i++){
+                switch(i){
+                    //Adding the size of the current ship
+                    case 0:
+                        fleetMessage[index] = currentShip.getSize();
+                        break;
+
+                    //Adding the starting x position
+                    case 1:
+                        fleetMessage[index] = currentShip.getLocation().get(0).getX();
+                        break;
+
+
+                    //Adding the starting y postition
+                    case 2:
+                        fleetMessage[index] = currentShip.getLocation().get(0).getY();
+                        break;
+
+                    //Adding the direction of the current ship
+                    case 3:
+                        if(currentShip.isOrientation())
+                            fleetMessage[index] = 1;
+
+                        else
+                            fleetMessage[index] = 0;
+
+                        break;
+                }
+                index++;
+            }
+        }
+
+        return fleetMessage;
+    }
+
+    /**
      * Make player's shot
      *
      * @param place - location to shoot
@@ -80,6 +153,8 @@ public class Game implements Observable{
         }
         return true;
     }
+
+
 
     private void makeComputerShot() {
         try {
@@ -122,6 +197,49 @@ public class Game implements Observable{
         if(currentTurn == 1) currentTurn = 2;
         else if(currentTurn == 2) currentTurn = 1;
         return currentTurn;
+    }
+
+    /**
+     * Returns whether the user is the first player or not
+     * @return
+     */
+    public boolean getFirstPlayer(){
+        return userFirst;
+    }
+
+    /**
+     * Randomly determines which player goes first
+     * @return
+     */
+    public boolean chooseFirstPlayer(){
+        Random rand = new Random();
+
+        int n = rand.nextInt(2) + 1;
+
+        //If the user is the first player
+        //Since the user is initialized as being first (see <initPlayers(int b, int s)>)
+        //there is no need to change anything
+        if(n == 1) {
+            userFirst = true;
+            return true;
+        }
+
+
+        //If the user goes second, then we switch
+        //both players' turns in order for the opponent
+        //to go first and the user to go second.
+        else {
+            userFirst = false;
+            return false;
+        }
+    }
+
+    public void setUserClient(boolean userClient) {
+        this.userClient = userClient;
+    }
+
+    public boolean getUserClient(){
+        return userClient;
     }
 
     public int getNumShots() {

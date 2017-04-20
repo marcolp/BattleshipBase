@@ -16,6 +16,8 @@ import android.widget.Toast;
 
 import org.w3c.dom.Text;
 
+import java.util.ArrayList;
+
 /** Marco Lopez
  * CS 5390 - Mobile Application Development
  * 2/14/2017
@@ -37,7 +39,9 @@ public class GameWindow extends AppCompatActivity implements Observer{
     private SparseIntArray soundMap;
 
     private boolean soundOption; //Boolean value to indicate if sound option is on or off
+    private NetworkAdapter netAdapter;
 
+    private Message receivedMessage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,13 +54,15 @@ public class GameWindow extends AppCompatActivity implements Observer{
         soundOption = true;
 
         Game.getInstance().currentTurn = 1;
-        Game.getInstance().numShots = 0;
+//        Game.getInstance().numShots = 0;
+
+        netAdapter = Game.getInstance().getPlayerConnection();
 
         turnText = (TextView) findViewById(R.id.turnText);
         shotText = (TextView) findViewById(R.id.numShots);
 
-        Player player = Game.getInstance().getPlayer();
-        Board playerBoard = player.getMyBoard();
+        Player player1 = Game.getInstance().getPlayer();
+        Board playerBoard = player1.getMyBoard();
 
         playerBoardView = (BoardView) findViewById(R.id.playerView);
 
@@ -76,12 +82,79 @@ public class GameWindow extends AppCompatActivity implements Observer{
 
         configureSounds();
 
+        NetworkAdapter netAdapter = Game.getInstance().getPlayerConnection();
+        netAdapter.setMessageListener(new NetworkAdapter.MessageListener() {
+            public void messageReceived(NetworkAdapter.MessageType type, int x, int y, int[] others) {
+                switch (type) {
+                    case SHOT:
+                        receivedMessage = new Message(Message.MessageType.SHOT, x, y, others);
+                        processShot(receivedMessage);
+                        break;
+
+                    case SHOT_ACK:
+                        receivedMessage = new Message(Message.MessageType.SHOT_ACK, x, y, others);
+                        processShotACK(receivedMessage);
+                        break;
+
+                    case GAME:
+                        receivedMessage = new Message(Message.MessageType.GAME, x, y, others);
+//                        processGame(receivedMessage);
+                        break;
+
+                    case GAME_ACK:
+                        receivedMessage = new Message(Message.MessageType.GAME_ACK, x, y, others);
+//                        processGameACK(receivedMessage);
+                        break;
+
+                    case FLEET:
+                        Log.d("RECEIVING", "FLEET");
+                        receivedMessage = new Message(Message.MessageType.FLEET, x, y, others);
+                        processFleetMessage(receivedMessage);
+                        break;
+
+                    case FLEET_ACK:
+                        receivedMessage = new Message(Message.MessageType.FLEET_ACK, x, y, others);
+                        processFleetACK(receivedMessage);
+                        break;
+
+                    case TURN:
+                        receivedMessage = new Message(Message.MessageType.TURN, x, y, others);
+//                        processTurnMessage(receivedMessage);
+                        break;
+
+                    case QUIT:
+                        receivedMessage = new Message(Message.MessageType.QUIT, x, y, others);
+//                        processQuitMessage(receivedMessage);
+                        break;
+
+                    case CLOSE:
+                        receivedMessage = new Message(Message.MessageType.CLOSE, x, y, others);
+//                        processCloseMessag(receivedMessage);
+                        break;
+
+                    case UNKNOWN:
+                        receivedMessage = new Message(Message.MessageType.UNKNOWN, x, y, others);
+//                        processUnknownMessage(receivedMessage);
+                        break;
+
+                }
+            }
+        });
+
+        //If we are the client then we send the fleet first
+        if (Game.getInstance().getUserClient()) {
+            netAdapter.writeFleet(Game.getInstance().makeFleetMessage());
+        }
+
+        netAdapter.receiveMessagesAsync();////////////
+
+
         playerBoardView.addBoardTouchListener(new BoardView.BoardTouchListener() {
             @Override
             public void onTouch(int x, int y) {
 
                 //Only allow show it if it the player's turn
-                if(Game.getInstance().hasTurn(player)){
+                if(Game.getInstance().hasTurn(player1)){
 
                     turnText.setText("Current turn: \nPlayer "+Game.getInstance().currentTurn);
                     Place placeShot = opponentBoard.getPlace(x, y);
@@ -156,6 +229,208 @@ public class GameWindow extends AppCompatActivity implements Observer{
 //            }
 //        });
         Log.d("Game window", "This is the onPause method");
+    }
+
+
+    /**
+     * Makes new ships from the fleet message and assigns them to the opponent.
+     *
+     * @param message
+     */
+    private boolean setOpponentShips(int[] message) {
+        ArrayList<Ship> opponentShips = Game.getInstance().computerPlayer.getMyShips();
+
+        int index = 0;
+
+        int shipCount = 0;
+        int nextShipSize = -1;
+        int nextShipStartingX = -1;
+        int nextShipStartingY = -1;
+        boolean isHorizontal = false;
+
+        Ship nextShip = null;
+
+        //Traverse the message
+        for (int i : message) {
+
+            //We are looking at the size of a ship
+            if (index == 0) {
+                //Reset for next ship
+                nextShipStartingX = -1;
+                nextShipStartingY = -1;
+                isHorizontal = false;
+
+                nextShipSize = i;
+
+                //Make a new ship based on the size
+                switch (nextShipSize) {
+                    case 5:
+                        nextShip = new Ship(5);
+                        break;
+                    case 4:
+                        nextShip = new Ship(4);
+                        break;
+                    case 3:
+                        nextShip = new Ship(3);
+                        break;
+                    case 2:
+                        nextShip = new Ship(2);
+                        break;
+
+                    default:
+                        System.out.println("NOT A SHIP");
+                        nextShip = null;
+                        return false;
+                }
+
+                //Replace previous ship with the new ship
+                opponentShips.set(shipCount , nextShip);
+                shipCount++;
+
+                index = 1;
+            }
+
+            //We are looking at the starting X of the ship
+            else if (index == 1) {
+                nextShipStartingX = i;
+                index = 2;
+            }
+
+            //We are looking at the starting Y of the ship
+            else if (index == 2) {
+                nextShipStartingY = i;
+                index = 3;
+            }
+
+            //We are looking at the direction of a ship
+            else if (index == 3) {
+
+                if (i == 1) isHorizontal = true;
+
+                ArrayList<Place> newPlaces = new ArrayList<Place>();
+
+                //Make new places for the new ship
+                for (int j = 0; j < nextShipSize; j++) {
+                    Place newPlace;
+                    if (isHorizontal) {
+                        newPlace = new Place(nextShipStartingX + j, nextShipStartingY);
+                    } else {
+                        newPlace = new Place(nextShipStartingX, nextShipStartingY + j);
+                    }
+                    newPlace.setShip(true);
+                    newPlaces.add(newPlace);
+                }
+
+//                nextShip.setPlaces(newPlaces);
+//                nextShip.setDirection(!isHorizontal);
+
+                nextShip.setLocation(newPlaces);
+                nextShip.setOrientation(isHorizontal);
+
+                index = 0;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Called when we receive a FLEET message in the NetworkAdapter message receiver
+     *
+     * @param received
+     */
+    private void processFleetMessage(Message received) {
+
+        setOpponentShips(received.others);
+
+        //Send an ACK for the FLEET we received
+        netAdapter.writeFleetAck(true);
+
+        //If we are the Server
+        if (!Game.getInstance().getUserClient()) {
+            //Send our own FLEET message
+            int[] message = Game.getInstance().makeFleetMessage();
+            netAdapter.writeFleet(message);
+        }
+
+        //TODO when to do false
+        //TODO difference between server and client
+    }
+
+    /**
+     * Called when we receive a FLEET_ACK message in the NetworkAdapter message listener
+     *
+     * @param receivedMessage
+     */
+    private void processFleetACK(Message receivedMessage) {
+        //If we are the client
+        if (Game.getInstance().getUserClient()) {
+
+        }
+
+        //If we are the server
+        //Server is always the last to receive a FLEET_ACK so we move on to starting the game from here
+        else {
+//            assignBoards();
+//            setBoards();
+
+            //Tell the opponent who has the first turn.
+            //We send the opposite of our own game because if we are
+            //first, then the opponent receives a message saying they are not
+            //first (false)
+            netAdapter.writeTurn(!Game.getInstance().getFirstPlayer());
+
+            //If we do go first, then send the first shot
+            if (Game.getInstance().getFirstPlayer()) {
+                //TODO handle in the board listener????
+            }
+
+            //If we go second we will receive a SHOT message
+            //Which will be handled by the message listener
+            else {
+                //TODO ?????
+            }
+        }
+    }
+
+    /**
+     * Called when we receive a SHOT message in the NetworkAdapter message listener
+     *
+     * @param messageGot
+     */
+    private void processShot(Message messageGot) {
+
+
+        /**
+         * ALWAYS acknolwedge the SHOT message.
+         * The reason being that I didn't find a way to extract the boolean
+         * from the message. Since the boolean acknowleding the message is part
+         * of the header and the network adapter extracts that into a type, int x, int y,
+         * and int[] others. Even though the boolean is parsed as an int, the listener in
+         * the example only receives 2 integers, but a SHOT_ACK would require 3: one for
+         * the actual ACK (1 for accept, 2 for reject), int x and y for where the place was shot.
+         */
+        netAdapter.writeShotAck(true, messageGot.getX(), messageGot.getY());
+        Place placeShotbyOpponent = Game.getInstance().player1.getMyBoard().getPlace(messageGot.getX(), messageGot.getY());
+        Game.getInstance().makePlayerShot(placeShotbyOpponent);
+
+    }
+
+    /**
+     * @param messageGot
+     */
+    private void processShotACK(Message messageGot) {
+
+        /**
+         * ALWAYS acknolwedge the SHOT message.
+         * The reason being that I didn't find a way to extract the boolean
+         * from the message. Since the boolean acknowleding the message is part
+         * of the header and the network adapter extracts that into a type, int x, int y,
+         * and int[] others. Even though the boolean is parsed as an int, the listener in
+         * the example only receives 2 integers, but a SHOT_ACK would require 3: one for
+         * the actual ACK (1 for accept, 2 for reject), int x and y for where the place was shot.
+         */
+        //        setBoards();
     }
 
 

@@ -13,4 +13,38 @@
 
     <!--MENU STRINGS-->
     <string name="sound_option">Sound OFF</string>
+    <string name="title_activity_deploy_ship">DeployShipActivity</string>
+
+    <!-- Button Labels -->
+    <string name="create_button_label">Create Game</string>
+    <string name="rotate_ship_label">Rotate Ship</string>
+
+    <!-- Ships for Placement -->
+    <string name="instr">Place each ship. Click the buttons to control each ship.</string>
+
+    <!-- The number of shots in the game -->
+    <string name="shot0">0 Shots</string>
+
+    <!-- The difficulty to play against -->
+    <string name="difficulty">Set Difficulty</string>
+    <string name="smart">High Difficulty</string>
+    <string name="random">Low Difficulty</string>
+
+    <!-- Computer Player's BoardView -->
+    <string name="computer_name">Player: Computer</string>
+    <string name="user_name">Player: User</string>
+
+    <!-- Buttons -->
+    <string name="left">-</string>
+    <string name="right">+</string>
+    <string name="up">^</string>
+    <string name="down">v</string>
+
+    <!-- Game Opponent Type -->
+    <string name="opponent_label">Choose an opponent to play Battleship.</string>
+    <string name="local">Play Locally</string>
+
+    <!-- Dialog -->
+    <string name="newGameRequest">Start New Game?</string>
+
 </resources>

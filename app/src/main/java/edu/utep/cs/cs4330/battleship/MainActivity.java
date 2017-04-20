@@ -1,281 +1,308 @@
+/*
+ * @created Mahdokht Afravi on 04/08 S
+ *
+ * Starts the Battleship App by asking the user
+ *   to choose a method of playing the game:
+ *   against a local opponent, a network opponent,
+ *   or the computer.
+ *
+ * @modified Mahdokht Afravi on 04/17 M
+ */
 package edu.utep.cs.cs4330.battleship;
 
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothProfile;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.net.nsd.NsdServiceInfo;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
+import android.net.wifi.p2p.WifiP2pManager;
+import android.os.AsyncTask;
+import android.os.SystemClock;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
+import android.net.wifi.p2p.WifiP2pManager;
+import android.provider.Settings;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
-import android.widget.Toast;
-import java.util.ArrayList;
+import android.util.Log;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
 
-/** Marco Lopez
- * CS 5390 - Mobile Application Development
- * 2/14/2017
- *
- * This is the controller in the MVC
- */
-public class MainActivity extends AppCompatActivity{
-
-    Ship currentShip;
-    Player humanPlayer;
-    BoardView humanBoardView;
-    Board humanBoard;
-    final int boardSize = 10;
-    Spinner spinner;
+public class MainActivity extends AppCompatActivity {
+    private Game game;
+    Spinner p2p;
+    int conectionType;
+    boolean connected;
+    Socket opponentSocket;
+    boolean client;
+    BroadcastReceiver receiver;
+    IntentFilter intentFilter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d("Main Activity", "This is the onCreate method");
-
         setContentView(R.layout.activity_main);
 
-        humanPlayer = new Player(1);
-        humanBoard = humanPlayer.getMyBoard();
+        conectionType = -1;
+        game = game.getInstance();
+        p2p = (Spinner) findViewById(R.id.P2Pspinner);
+        setP2PSpinner();
+        connected = false;
+        client = false;
+    }
 
-        humanPlayer.setMyBoard(humanBoard);
+    /* Register the broadcast receiver with the intent values to be matched */
+    @Override
+    protected void onResume() {
+        super.onResume();
+//        registerReceiver(receiver, intentFilter);
+    }
+    /* De-register the broadcast receiver */
+    @Override
+    protected void onPause() {
+        super.onPause();
+//        unregisterReceiver(receiver);
+    }
 
-        humanBoardView = (BoardView) findViewById(R.id.boardView);
-        humanBoardView.setBoard(humanBoard);
-        humanBoardView.setFirstActivity(true);
-        initialPlacing();
+    /** Show a toast message. */
+    protected void toast(String msg) {
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+    }
 
-        spinner = (Spinner) findViewById(R.id.ship_spinner);
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.ships_array, android.R.layout.simple_spinner_item);
-        // Specify the layout to use when the list of choices appears
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        // Apply the adapter to the spinner
-        spinner.setAdapter(adapter);
-        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
+    /* Sets adapters to the Spinners */
+    private void setP2PSpinner() {;
+        //P2P Adapter
+        ArrayAdapter<CharSequence> p2pAdapter = ArrayAdapter.createFromResource(this,R.array.p2p,android.R.layout.simple_spinner_item);
+        p2pAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        p2p.setAdapter(p2pAdapter);
+        p2p.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                switch(position){
-                    //Aircraft carrier
-                    case 0:
-                        Toast.makeText(getApplicationContext(), "Selected Aircraft Carrier", Toast.LENGTH_SHORT).show();
-                        currentShip = humanPlayer.getMyShips().get(0);
+                switch ( position ) {
+                    case 0: //Bluetooth
+                        //startBTGame();
+                        conectionType = 0;
                         break;
-
-                    //Battleship
-                    case 1:
-                        Toast.makeText(getApplicationContext(), "Selected Battleship", Toast.LENGTH_SHORT).show();
-                        currentShip = humanPlayer.getMyShips().get(1);
+                    case 1: //Wifi Direct
+                        //startWFDirectGame();
+                        conectionType = 1;
                         break;
-
-                    //Frigate
-                    case 2:
-                        Toast.makeText(getApplicationContext(), "Selected Frigate", Toast.LENGTH_SHORT).show();
-                        currentShip = humanPlayer.getMyShips().get(2);
-                        break;
-
-                    //Submarine
-                    case 3:
-                        Toast.makeText(getApplicationContext(), "Selected Submarine", Toast.LENGTH_SHORT).show();
-                        currentShip = humanPlayer.getMyShips().get(3);
-                        break;
-
-                    //Minesweeper
-                    case 4:
-                        Toast.makeText(getApplicationContext(), "Selected Mineseeper", Toast.LENGTH_SHORT).show();
-                        currentShip = humanPlayer.getMyShips().get(4);
-                        break;
-
-                    default:
+                    case 2: //Wifi
+//                        startWFGame();
+                        conectionType = 2;
                         break;
                 }
             }
-
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
-
+                //TODO idk maybe something pretty?
             }
         });
-
-        Game.getInstance().addPlayer(humanPlayer);
-        humanPlayer.setPlayerNumber(1);
-
-        ComputerPlayer opponent = new ComputerPlayer(2);
-        opponent.placeShips();
-        opponent.setPlayerNumber(2);
-        Game.getInstance().addComputer(opponent);
     }
 
-    /**
-     * Move buttons method
-     * @param view - The button pressed
-     */
-    public void moveShip(View view){
-        switch(view.getId()){
-            case R.id.move_left:
-                moveShip(-1,0);
-                humanBoardView.redraw();
-                break;
-
-            case R.id.move_right:
-                moveShip(1,0);
-                humanBoardView.redraw();
-                break;
-
-            case R.id.move_up:
-                moveShip(0,-1);
-                humanBoardView.redraw();
-                break;
-
-            case R.id.move_down:
-                moveShip(0,1);
-                humanBoardView.redraw();
-                break;
-
-            case R.id.rotateLeft:
-                rotate(currentShip);
-                humanBoardView.redraw();
-                break;
-
-            case R.id.rotateRight:
-                rotate(currentShip);
-                humanBoardView.redraw();
-                break;
-        }
-    }
-
-    private boolean moveShip(int rowAmount, int colAmount){
-        ArrayList<Place> places = currentShip.getLocation();
-        int row;
-        int col;
-        ArrayList<Place> newLocation = new ArrayList<Place>();
-        for(Place currentPlace : places){
-            row = currentPlace.getX();
-            col = currentPlace.getY();
-
-            if(row + rowAmount < 0 || row + rowAmount > humanBoard.getSize()-1 || col + colAmount < 0 || col + colAmount > humanBoard.getSize()-1){
-                Toast.makeText(getApplicationContext(), "Invalid movement, out of board.", Toast.LENGTH_SHORT).show();
-                return false;
-            }
-
-            Place newPlace = new Place();
-            newPlace = humanBoard.getPlace(row+rowAmount, col+colAmount);
-
-            if (!currentShip.getLocation().contains(newPlace) && newPlace.isShip()) {
-                Toast.makeText(getApplicationContext(), "Invalid movement, other ship in the way.", Toast.LENGTH_SHORT).show();
-                return false;
-            }
-
-            newLocation.add(newPlace);
-        }
-
-
-        for(Place currentPlace : places){
-            row = currentPlace.getX();
-            col = currentPlace.getY();
-
-
-            if(!newLocation.contains(currentPlace)) {
-                currentPlace.setShip(false);
-            }
-
-            Place newPlace = new Place();
-            newPlace = humanBoard.getPlace(row+rowAmount, col+colAmount);
-            newPlace.setShip(true);
-        }
-
-        currentShip.setLocation(newLocation);
-
-        return true;
-    }
-
-
-    /**
-     * Called when user pushes the "DONE" button
-     * @param view - The button pressed
-     */
-    public void placeShips(View view){
-        Intent intent = new Intent(getBaseContext(), GameWindow.class);
-        startActivity(intent);
-        finish();
-    }
-
-    /**
-     * Place ships in original position
-     */
-    private void initialPlacing(){
-        int count = 0;
-        for(Ship currentShip : humanPlayer.getMyShips()){
-            for(int i = 0; i < currentShip.getSize(); i++){
-                Place currentPlace = humanBoard.getPlace(i,count);
-                currentPlace.setShip(true);
-                currentShip.getLocation().add(currentPlace);
-            }
-            count++;
-        }
-    }
-
-    /**
-     * Change ship orientation
-     * @return true if the ship was able to rotate successfully, false otherwise
-     */
-    private boolean rotate(Ship rotatingShip){
-
-        int amount = rotatingShip.getSize()/2;
-
-        //If the ship is horizontal then we will add the amount to the places of the ship
-        //Otherwise we will subtract it
-        if(!rotatingShip.isOrientation()){
-            amount = -amount;
-        }
-
-            //Traverse each place checking whether or not each place will go out of bounds from the board
-            for(Place currentPlace : rotatingShip.getLocation()){
-
-                //Get current coordinates in order to increase or decrease them depending on <amount>
-                int row = currentPlace.getX();
-                int col = currentPlace.getY();
-
-                //If the new coordinates for the place go out of bounds return false and display a message
-                if(row + amount > humanBoard.getSize()-1 || row + amount < 0 || col + amount > humanBoard.getSize()-1 || col + amount < 0) {
-                    Toast.makeText(getApplicationContext(), "Invalid Rotation, out of board.", Toast.LENGTH_SHORT).show();
-                    return false;
-                }
-
-                //Check to see if the new place has a colliding ship meaning it cannot be rotated that way.
-                //Don't check when amount is 0 though because it would say that it collided with itself.
-                else if(amount != 0) {
-                    if (humanBoard.getPlace(row + amount, col + amount).isShip()) {
-                        Toast.makeText(getApplicationContext(), "Invalid Rotation, other ship in the way.", Toast.LENGTH_SHORT).show();
-                        return false;
-                    }
-                }
-
-                if (rotatingShip.isOrientation())
-                    amount--;
-                else
-                    amount++;
-                }
-
-
-        //Actually change the places
-        amount = rotatingShip.getSize()/2;
-        if(!rotatingShip.isOrientation()){
-            amount = -amount;
-        }
-            ArrayList<Place> newLocations = new ArrayList<>();
-
-            for(Place currentPlace : rotatingShip.getLocation()){
-                currentPlace.setShip(false);
-                Place newPlace = humanBoard.getPlace(currentPlace.getX() + amount, currentPlace.getY() + amount);
-                newPlace.setShip(true);
-                newLocations.add(newPlace);
-                if(rotatingShip.isOrientation())
-                    amount--;
-
-                else
-                    amount++;
-            }
-
-            currentShip.setLocation(newLocations);
-            rotatingShip.setOrientation(!rotatingShip.isOrientation());
+    /* Bluetooth Functionality */
+    private boolean BTenabled() {
+        //checks if BT is on
+        BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
+        if ( btAdapter!=null && btAdapter.isEnabled() )
             return true;
+        return false;
+    }
+
+    private void turnOnBT() {
+        //creates a window alert: user permission to turn on BT
+        Intent intent = new Intent(BluetoothAdapter.getDefaultAdapter().ACTION_REQUEST_ENABLE);
+        startActivity(intent);
+    }
+
+    private void startBTGame() {
+        //activity (settings): connects to bluetooth
+        startActivity(new Intent(Settings.ACTION_BLUETOOTH_SETTINGS));
+        BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
+        if ( !true ) //todo device not connected to another phone
+            createTryAgainDialog("Bluetooth not connected!","Try Again","Cancel");
+        //String remote = btAdapter.getAddress(); // format 00:00:00:00:00:00
+        //UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+        //BluetoothServerSocket btSS = btAdapter.listenUsingRfcommWithServiceRecord(remote,uuid);
+        //BluetoothDevice btDevice = btAdapter.getRemoteDevice(remote);
+        //BluetoothSocket btS = btDevice.createRfcommSocketToServiceRecord(SERIAL_UUID);
+        //btS.connect();
+    }
+
+    /* Wifi Functionality */
+    private boolean WFenabled() {
+        //checks if WF is on
+        WifiManager m = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        return m.isWifiEnabled();
+    }
+
+    private void turnOnWF() {
+        //creates a window alert: user permission to turn on WF
+        WifiManager m = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
+    }
+
+    private void startWFGame() {
+        //activity (settings): connects to wifi
+        if ( !WFenabled() )
+            turnOnWF();
+        //fixme it jumps straight to error dialog before turnOnWF()
+        /*
+        ConnectivityManager m = (ConnectivityManager) getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo wifi = m.getNetworkInfo(ConnectivityManager.TYPE_WIFI); //deprecated
+        if ( wifi.isConnected() ) startGame();*/
+        // /*
+        WifiManager m = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        WifiInfo wifi = m.getConnectionInfo();
+        if ( wifi.getNetworkId()!=-1 ) {
+            connectPlayers();
+
+            //Wait for connection thread to be done.
+            while(true){
+                if(connected){
+                    break;
+                }
+            }
+
+
+            //IF we are the client of the game
+            if(client){
+                game.getInstance().setUserClient(true);
+            }
+
+
+            //IF we are the server of the game
+            else{
+                game.getInstance().setUserClient(false);
+            }
+            startGame();
+        }
+        else createTryAgainDialog("Wifi not connected!","Try Again","Cancel");
+    }
+
+    private void connectPlayers(){
+
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                //TODO your background code
+                try{
+                    //Connect to the connector socket
+                    Socket connectorSocket = new Socket("172.19.152.146", 8003);
+
+                    //To read from socket
+                    BufferedReader in
+                            = new BufferedReader(
+                            new InputStreamReader(connectorSocket.getInputStream()));
+
+                    //To write to socket
+                    PrintWriter out
+                            = new PrintWriter(
+                            new OutputStreamWriter(connectorSocket.getOutputStream()));
+
+                    //This is the other client's IP
+                    String otherIP = in.readLine();
+
+
+                    //This is the other client's PORT number
+                    String otherPORT = in.readLine();
+
+                    //This is stating whether This is the client or the server
+                    String clientBoolean = in.readLine();
+
+                    ServerSocket opponentServerSocket;
+
+                    //If we are the client then create a socket to the server
+                    if(clientBoolean.equals("true")) {
+                        client = true;
+                        SystemClock.sleep(1000);
+                        opponentSocket = new Socket(otherIP, 2027);
+                    }
+
+                    //If we are the server create a server socket
+                    else{
+                        opponentServerSocket = new ServerSocket(2027);
+                        opponentSocket = opponentServerSocket.accept();
+                    }
+
+                    game.getInstance().initializeAdapter(opponentSocket);
+
+                    connected = true;
+                }
+                catch(IOException e){
+                    e.printStackTrace();
+                    Log.d("CONNECTING", e.toString());
+                }
+            }
+        });
+    }
+
+
+    /* Creates a dialog for user confirmation */
+    private void createTryAgainDialog(String msg, String positive, String negative) {
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder.setMessage(msg);
+        alertDialogBuilder.setPositiveButton(positive,
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface arg0, int arg1) {
+                        setP2PSpinner(); //fixme what do when user wants to try connecting again?
+                    }
+                });
+        alertDialogBuilder.setNegativeButton(negative,
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface arg0, int arg1) {
+                        //recreate(); //fixme what do when user doesn't want to connect?
+                    }
+                });
+        AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();}
+
+    /* Starts the Battleship Game */
+    private void startGame() {
+        Intent intent = new Intent(getApplicationContext(),DeployShipActivity.class);
+        startActivity(intent);
+    }
+
+    public void startAIGame(View view){
+        Intent intent = new Intent(getApplicationContext(),DeployShipActivity.class);
+        startActivity(intent);
+    }
+
+    public void connectPlayer(View view){
+        switch ( conectionType ) {
+            case 0: //Bluetooth
+                startBTGame();
+                break;
+            case 1: //Wifi Direct
+//                startWFDirectGame();
+                break;
+            case 2: //Wifi
+                startWFGame();
+                break;
+        }
     }
 }

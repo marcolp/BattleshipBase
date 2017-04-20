@@ -1,5 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string-array name="ai">
+        <item>Smart</item>
+        <item>Random</item>
+    </string-array>
+
+    <string-array name="p2p">
+        <item>Bluetooth</item>
+        <item>Wifi Direct</item>
+        <item>Wifi</item>
+    </string-array>
+
     <string-array name="ships_array">
         <item>Aircraft Carrier</item>
         <item>Battleship</item>
