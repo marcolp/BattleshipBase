@@ -45,6 +45,9 @@ public class GameWindow extends AppCompatActivity implements Observer{
 
     private Message receivedMessage;
 
+    private Player player1;
+    private Player player2;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -63,13 +66,13 @@ public class GameWindow extends AppCompatActivity implements Observer{
         turnText = (TextView) findViewById(R.id.turnText);
         shotText = (TextView) findViewById(R.id.numShots);
 
-        Player player1 = game.getPlayer1();
-        Board playerBoard = player1.getMyBoard();
+        player1 = game.getPlayer1();
+        playerBoard = player1.getMyBoard();
 
         playerBoardView = (BoardView) findViewById(R.id.playerView);
 
-        Player opponent = game.getPlayer2();
-        opponentBoard = opponent.myBoard;
+        player2 = game.getPlayer2();
+        opponentBoard = player2.myBoard;
 
         opponentBoardView = (BoardView) findViewById(R.id.opponentView);
         opponentBoardView.setFirstActivity(false);
@@ -159,68 +162,8 @@ public class GameWindow extends AppCompatActivity implements Observer{
             @Override
             public void onTouch(int x, int y) {
 
-                //Only allow show it if it the player's turn
-                if(game.hasTurn(player1)){
+                player1HitPlace(x,y);
 
-                    turnText.setText("Current turn: \nPlayer "+game.currentTurn);
-                    Place placeShot = opponentBoard.getPlace(x, y);
-
-                    //If the player shoots a place already shot then do nothing.
-                    if(!placeShot.isHit()) {
-
-                        /**Make a shot on the board*/
-                        boolean hitShip = game.makePlayerShot(placeShot);
-                        String playerTurn = "";
-                        playerTurn = "Current turn: \nPlayer "+game.currentTurn;
-                        turnText.setText(playerTurn);
-
-                        shotText.setText("Number of shots: "+game.numShots);
-
-                        //If sound option is on play sounds
-                        if(soundOption) {
-
-                            //If it hit a ship play a sound
-                            if (hitShip) {
-                                netAdapter.writeShot(x,y);
-                                soundPool.play(2, 1, 1, 1, 0, 1.0f);
-
-                                /**If the shot sunk a ship play another sound
-                                 * and check if the game is over.
-                                 */
-                                if (opponent.getShip(placeShot).isSunk()) {
-                                    soundPool.play(3, 1, 1, 1, 0, 1.0f);
-
-                                    if (game.isGameOver()) {
-                                        if(soundOption) {
-                                            soundPool.play(1, 1, 1, 1, 0, 1.0f);
-                                        }
-
-                                        playerBoardView.createGameOverDialog("All ships sunk! You Win!");
-                                        playerBoardView.gameOverDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                                            @Override
-                                            public void onDismiss(DialogInterface dialog) {
-                                                finish();
-                                                System.exit(0);
-                                            }
-                                        });
-
-
-                                        //TODO RESET game by going back to activity 1;
-//                                        Intent intent = new Intent(getBaseContext(), MainActivity.class);
-//                                        startActivity(intent);
-//                                        board = new Board(boardSize);
-//                                        boardView.setBoard(board);
-//                                        boardView.redraw();
-//                                        boardView.updateShotNumber(0);
-                                    }
-                                    else {
-                                        toast(String.format("Touched: %d, %d", x, y));
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
             }
         });
 
@@ -420,11 +363,12 @@ public class GameWindow extends AppCompatActivity implements Observer{
          * the actual ACK (1 for accept, 2 for reject), int x and y for where the place was shot.
          */
         netAdapter.writeShotAck(true, messageGot.getX(), messageGot.getY());
-        Place placeShotbyOpponent = game.player1.getMyBoard().getPlace(messageGot.getX(), messageGot.getY());
-        game.makePlayerShot(placeShotbyOpponent);
+//        Place placeShotbyOpponent = game.player1.getMyBoard().getPlace(messageGot.getX(), messageGot.getY());
+//        game.makePlayerShot(placeShotbyOpponent);
         this.runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                player2HitPlace(messageGot.getX(), messageGot.getY());
                 opponentBoardView.invalidate();
             }
         });
@@ -459,6 +403,137 @@ public class GameWindow extends AppCompatActivity implements Observer{
 
         else{
             game.changeTurn();
+        }
+    }
+
+    private void player2HitPlace(int x, int y){
+        //Only allow show it if it the player's turn
+        if(game.hasTurn(player2)){
+
+            turnText.setText("Current turn: \nPlayer "+game.currentTurn);
+            Place placeShot = playerBoard.getPlace(x, y);
+
+            //If the player shoots a place already shot then do nothing.
+            if(!placeShot.isHit()) {
+
+                /**Make a shot on the board*/
+                boolean hitShip = game.makePlayerShot(placeShot);
+                String playerTurn = "";
+                playerTurn = "Current turn: \nPlayer "+game.currentTurn;
+                turnText.setText(playerTurn);
+
+                shotText.setText("Number of shots: "+game.numShots);
+
+                //If sound option is on play sounds
+                if(soundOption) {
+
+                    //If it hit a ship play a sound
+                    if (hitShip) {
+//                        netAdapter.writeShot(x,y);
+                        soundPool.play(2, 1, 1, 1, 0, 1.0f);
+
+                        /**If the shot sunk a ship play another sound
+                         * and check if the game is over.
+                         */
+                        if (player1.getShip(placeShot).isSunk()) {
+                            soundPool.play(3, 1, 1, 1, 0, 1.0f);
+
+                            if (game.isGameOver()) {
+                                if(soundOption) {
+                                    soundPool.play(1, 1, 1, 1, 0, 1.0f);
+                                }
+
+                                playerBoardView.createGameOverDialog("All ships sunk! You Win!");
+                                playerBoardView.gameOverDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                                    @Override
+                                    public void onDismiss(DialogInterface dialog) {
+                                        finish();
+                                        System.exit(0);
+                                    }
+                                });
+
+
+                                //TODO RESET game by going back to activity 1;
+//                                        Intent intent = new Intent(getBaseContext(), MainActivity.class);
+//                                        startActivity(intent);
+//                                        board = new Board(boardSize);
+//                                        boardView.setBoard(board);
+//                                        boardView.redraw();
+//                                        boardView.updateShotNumber(0);
+                            }
+                            else {
+                                toast(String.format("Touched: %d, %d", x, y));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void player1HitPlace(int x, int y){
+        //Only allow show it if it the player's turn
+        if(game.hasTurn(player1)){
+
+            turnText.setText("Current turn: \nPlayer "+game.currentTurn);
+            Place placeShot = opponentBoard.getPlace(x, y);
+
+            //If the player shoots a place already shot then do nothing.
+            if(!placeShot.isHit()) {
+
+                netAdapter.writeShot(x,y);
+
+                /**Make a shot on the board*/
+                boolean hitShip = game.makePlayerShot(placeShot);
+                String playerTurn = "";
+                playerTurn = "Current turn: \nPlayer "+game.currentTurn;
+                turnText.setText(playerTurn);
+
+                shotText.setText("Number of shots: "+game.numShots);
+
+                //If sound option is on play sounds
+                if(soundOption) {
+
+                    //If it hit a ship play a sound
+                    if (hitShip) {
+                        soundPool.play(2, 1, 1, 1, 0, 1.0f);
+
+                        /**If the shot sunk a ship play another sound
+                         * and check if the game is over.
+                         */
+                        if (player2.getShip(placeShot).isSunk()) {
+                            soundPool.play(3, 1, 1, 1, 0, 1.0f);
+
+                            if (game.isGameOver()) {
+                                if(soundOption) {
+                                    soundPool.play(1, 1, 1, 1, 0, 1.0f);
+                                }
+
+                                playerBoardView.createGameOverDialog("All ships sunk! You Win!");
+                                playerBoardView.gameOverDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                                    @Override
+                                    public void onDismiss(DialogInterface dialog) {
+                                        finish();
+                                        System.exit(0);
+                                    }
+                                });
+
+
+                                //TODO RESET game by going back to activity 1;
+//                                        Intent intent = new Intent(getBaseContext(), MainActivity.class);
+//                                        startActivity(intent);
+//                                        board = new Board(boardSize);
+//                                        boardView.setBoard(board);
+//                                        boardView.redraw();
+//                                        boardView.updateShotNumber(0);
+                            }
+                            else {
+                                toast(String.format("Touched: %d, %d", x, y));
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
