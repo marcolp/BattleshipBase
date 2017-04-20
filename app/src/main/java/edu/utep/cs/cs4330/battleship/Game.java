@@ -18,11 +18,9 @@ public class Game implements Observable{
     int numShots = 0; //integer representing the number of shots human player has made
 
     Player player1;
-    ComputerPlayer computerPlayer;
+    Player player2;
 
     int currentTurn;
-
-
 
     boolean userClient;
     boolean userFirst;
@@ -35,23 +33,32 @@ public class Game implements Observable{
     }
 
 
-    public void addPlayer(Player newPlayer){
+    public void addPlayer1(Player newPlayer){
         if(player1 == null) {
             player1 = newPlayer;
         }
 
         else{
-            player1 = newPlayer;
+//            player1 = newPlayer;
         }
     }
 
-    public void addComputer(ComputerPlayer newComputer){
-        if(computerPlayer == null){
-            computerPlayer = newComputer;
+    public void addPlayer2(Player newPlayer2){
+        if(player2 == null){
+            player2 = newPlayer2;
         }
 
         else{
-            computerPlayer = newComputer;
+//            player2 = newPlayer2;
+        }
+    }
+    public void addComputer(ComputerPlayer newComputer){
+        if(player2 == null){
+            player2 = newComputer;
+        }
+
+        else{
+            player2 = newComputer;
         }
     }
     /**
@@ -59,16 +66,25 @@ public class Game implements Observable{
      *
      * @return Player1
      */
-    public Player getPlayer(){
+    public Player getPlayer1(){
         return player1;
     }
 
+    public Player getPlayer2(){
+        return player2;
+    }
     /**
      * Get computer player
      * @return computerPlayer
      */
     public ComputerPlayer getComputerPlayer(){
-        return computerPlayer;
+        if(player2.getClass().equals("ComputerPlayer")){
+            return (ComputerPlayer) player2;
+        }
+
+        else{
+            return null;
+        }
     }
 
     /**
@@ -148,7 +164,7 @@ public class Game implements Observable{
         numShots++;
         if(!isGameOver() && !place.isShip()){
             changeTurn();
-            new Thread(this::makeComputerShot).start();
+//            new Thread(this::makeComputerShot).start(); //FIXME No need to call this in a WIFI game
             return false;
         }
         return true;
@@ -161,7 +177,7 @@ public class Game implements Observable{
             Thread.sleep(500);
         }   catch (InterruptedException e) {
         }
-        boolean hit = computerPlayer.makeMove();
+        boolean hit = this.getComputerPlayer().makeMove();
         notifyObserver();
         if (!isGameOver()) {
             if (hit) {
@@ -173,7 +189,7 @@ public class Game implements Observable{
     }
 
     public boolean isGameOver(){
-        if(player1.allSunk() || computerPlayer.allSunk())
+        if(player1.allSunk() || player2.allSunk())
             return true;
         else return false;
     }
@@ -193,7 +209,7 @@ public class Game implements Observable{
      * Change the turn to the other player
      * @return the current turn indicator
      */
-    private int changeTurn(){
+    public int changeTurn(){
         if(currentTurn == 1) currentTurn = 2;
         else if(currentTurn == 2) currentTurn = 1;
         return currentTurn;
@@ -249,7 +265,6 @@ public class Game implements Observable{
     public void setNumShots(int numShots) {
         this.numShots = numShots;
     }
-
 
     /**=================================Observer stuff======================================*/
 

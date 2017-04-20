@@ -96,13 +96,15 @@ public class DeployShipActivity extends AppCompatActivity{
             }
         });
 
-        Game.getInstance().addPlayer(humanPlayer);
+        Game.getInstance().addPlayer1(humanPlayer);
         humanPlayer.setPlayerNumber(1);
 
-        ComputerPlayer opponent = new ComputerPlayer(2);
-        opponent.placeShips();
+//        ComputerPlayer opponent = new ComputerPlayer(2);
+//        opponent.placeShips();
+
+        Player opponent = new Player(2);
         opponent.setPlayerNumber(2);
-        Game.getInstance().addComputer(opponent);
+        Game.getInstance().addPlayer2(opponent);
     }
 
     /**

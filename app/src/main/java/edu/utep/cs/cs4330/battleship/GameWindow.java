@@ -41,6 +41,8 @@ public class GameWindow extends AppCompatActivity implements Observer{
     private boolean soundOption; //Boolean value to indicate if sound option is on or off
     private NetworkAdapter netAdapter;
 
+    private Game game = Game.getInstance();
+
     private Message receivedMessage;
 
     @Override
@@ -53,20 +55,20 @@ public class GameWindow extends AppCompatActivity implements Observer{
         final int boardSize = 10;
         soundOption = true;
 
-        Game.getInstance().currentTurn = 1;
-//        Game.getInstance().numShots = 0;
+        game.currentTurn = 1;
+//        game.numShots = 0;
 
-        netAdapter = Game.getInstance().getPlayerConnection();
+        netAdapter = game.getPlayerConnection();
 
         turnText = (TextView) findViewById(R.id.turnText);
         shotText = (TextView) findViewById(R.id.numShots);
 
-        Player player1 = Game.getInstance().getPlayer();
+        Player player1 = game.getPlayer1();
         Board playerBoard = player1.getMyBoard();
 
         playerBoardView = (BoardView) findViewById(R.id.playerView);
 
-        ComputerPlayer opponent = Game.getInstance().getComputerPlayer();
+        Player opponent = game.getPlayer2();
         opponentBoard = opponent.myBoard;
 
         opponentBoardView = (BoardView) findViewById(R.id.opponentView);
@@ -75,14 +77,14 @@ public class GameWindow extends AppCompatActivity implements Observer{
         //Views must have other player's board in order to indicate they are shooting at opponent
         opponentBoardView.setBoard(playerBoard);
 
-        Game.getInstance().addObserver(this);
+        game.addObserver(this);
 
         playerBoardView.setBoard(opponentBoard);
         playerBoardView.setFirstActivity(false);
 
         configureSounds();
 
-        NetworkAdapter netAdapter = Game.getInstance().getPlayerConnection();
+        NetworkAdapter netAdapter = game.getPlayerConnection();
         netAdapter.setMessageListener(new NetworkAdapter.MessageListener() {
             public void messageReceived(NetworkAdapter.MessageType type, int x, int y, int[] others) {
                 switch (type) {
@@ -119,7 +121,7 @@ public class GameWindow extends AppCompatActivity implements Observer{
 
                     case TURN:
                         receivedMessage = new Message(Message.MessageType.TURN, x, y, others);
-//                        processTurnMessage(receivedMessage);
+                        processTurnMessage(receivedMessage);
                         break;
 
                     case QUIT:
@@ -141,9 +143,13 @@ public class GameWindow extends AppCompatActivity implements Observer{
             }
         });
 
+        game.chooseFirstPlayer();
+
+        if(!game.userFirst) game.getInstance().changeTurn();
+
         //If we are the client then we send the fleet first
-        if (Game.getInstance().getUserClient()) {
-            netAdapter.writeFleet(Game.getInstance().makeFleetMessage());
+        if (game.getUserClient()) {
+            netAdapter.writeFleet(game.makeFleetMessage());
         }
 
         netAdapter.receiveMessagesAsync();////////////
@@ -154,27 +160,28 @@ public class GameWindow extends AppCompatActivity implements Observer{
             public void onTouch(int x, int y) {
 
                 //Only allow show it if it the player's turn
-                if(Game.getInstance().hasTurn(player1)){
+                if(game.hasTurn(player1)){
 
-                    turnText.setText("Current turn: \nPlayer "+Game.getInstance().currentTurn);
+                    turnText.setText("Current turn: \nPlayer "+game.currentTurn);
                     Place placeShot = opponentBoard.getPlace(x, y);
 
                     //If the player shoots a place already shot then do nothing.
                     if(!placeShot.isHit()) {
 
                         /**Make a shot on the board*/
-                        boolean hitShip = Game.getInstance().makePlayerShot(placeShot);
+                        boolean hitShip = game.makePlayerShot(placeShot);
                         String playerTurn = "";
-                        playerTurn = "Current turn: \nPlayer "+Game.getInstance().currentTurn;
+                        playerTurn = "Current turn: \nPlayer "+game.currentTurn;
                         turnText.setText(playerTurn);
 
-                        shotText.setText("Number of shots: "+Game.getInstance().numShots);
+                        shotText.setText("Number of shots: "+game.numShots);
 
                         //If sound option is on play sounds
                         if(soundOption) {
 
                             //If it hit a ship play a sound
                             if (hitShip) {
+                                netAdapter.writeShot(x,y);
                                 soundPool.play(2, 1, 1, 1, 0, 1.0f);
 
                                 /**If the shot sunk a ship play another sound
@@ -183,7 +190,7 @@ public class GameWindow extends AppCompatActivity implements Observer{
                                 if (opponent.getShip(placeShot).isSunk()) {
                                     soundPool.play(3, 1, 1, 1, 0, 1.0f);
 
-                                    if (Game.getInstance().isGameOver()) {
+                                    if (game.isGameOver()) {
                                         if(soundOption) {
                                             soundPool.play(1, 1, 1, 1, 0, 1.0f);
                                         }
@@ -228,7 +235,7 @@ public class GameWindow extends AppCompatActivity implements Observer{
 //                boardView.updateShotNumber(0);
 //            }
 //        });
-        Log.d("Game window", "This is the onPause method");
+        Log.d("Game window", "This is the onCreate method");
     }
 
 
@@ -238,7 +245,8 @@ public class GameWindow extends AppCompatActivity implements Observer{
      * @param message
      */
     private boolean setOpponentShips(int[] message) {
-        ArrayList<Ship> opponentShips = Game.getInstance().computerPlayer.getMyShips();
+
+        ArrayList<Ship> opponentShips = game.getPlayer2().getMyShips();
 
         int index = 0;
 
@@ -313,11 +321,12 @@ public class GameWindow extends AppCompatActivity implements Observer{
                 for (int j = 0; j < nextShipSize; j++) {
                     Place newPlace;
                     if (isHorizontal) {
-                        newPlace = new Place(nextShipStartingX + j, nextShipStartingY);
+                        newPlace = game.getPlayer2().getMyBoard().getPlace(nextShipStartingX + j, nextShipStartingY);
                     } else {
-                        newPlace = new Place(nextShipStartingX, nextShipStartingY + j);
+                        newPlace = game.getPlayer2().getMyBoard().getPlace(nextShipStartingX, nextShipStartingY + j);
                     }
-                    newPlace.setShip(true);
+//                    newPlace.setShip(true); //Not needed, handled in SHIP class (setLocation method)
+//                    newPlaces.remove(shipCount-1);
                     newPlaces.add(newPlace);
                 }
 
@@ -347,9 +356,9 @@ public class GameWindow extends AppCompatActivity implements Observer{
         netAdapter.writeFleetAck(true);
 
         //If we are the Server
-        if (!Game.getInstance().getUserClient()) {
+        if (!game.getUserClient()) {
             //Send our own FLEET message
-            int[] message = Game.getInstance().makeFleetMessage();
+            int[] message = game.makeFleetMessage();
             netAdapter.writeFleet(message);
         }
 
@@ -364,7 +373,7 @@ public class GameWindow extends AppCompatActivity implements Observer{
      */
     private void processFleetACK(Message receivedMessage) {
         //If we are the client
-        if (Game.getInstance().getUserClient()) {
+        if (game.getUserClient()) {
 
         }
 
@@ -378,10 +387,10 @@ public class GameWindow extends AppCompatActivity implements Observer{
             //We send the opposite of our own game because if we are
             //first, then the opponent receives a message saying they are not
             //first (false)
-            netAdapter.writeTurn(!Game.getInstance().getFirstPlayer());
+            netAdapter.writeTurn(!game.getFirstPlayer());
 
             //If we do go first, then send the first shot
-            if (Game.getInstance().getFirstPlayer()) {
+            if (game.getFirstPlayer()) {
                 //TODO handle in the board listener????
             }
 
@@ -411,9 +420,14 @@ public class GameWindow extends AppCompatActivity implements Observer{
          * the actual ACK (1 for accept, 2 for reject), int x and y for where the place was shot.
          */
         netAdapter.writeShotAck(true, messageGot.getX(), messageGot.getY());
-        Place placeShotbyOpponent = Game.getInstance().player1.getMyBoard().getPlace(messageGot.getX(), messageGot.getY());
-        Game.getInstance().makePlayerShot(placeShotbyOpponent);
-
+        Place placeShotbyOpponent = game.player1.getMyBoard().getPlace(messageGot.getX(), messageGot.getY());
+        game.makePlayerShot(placeShotbyOpponent);
+        this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                opponentBoardView.invalidate();
+            }
+        });
     }
 
     /**
@@ -433,6 +447,20 @@ public class GameWindow extends AppCompatActivity implements Observer{
         //        setBoards();
     }
 
+    /**
+     * Called when we receive a TURN message
+     */
+    private void processTurnMessage(Message gotMessage){
+
+        //If it is 1 then we go first
+        if(gotMessage.getX() == 1){
+
+        }
+
+        else{
+            game.changeTurn();
+        }
+    }
 
     private void configureSounds(){
         soundPool = new SoundPool(1, AudioManager.STREAM_MUSIC, 0);
@@ -561,9 +589,9 @@ public class GameWindow extends AppCompatActivity implements Observer{
         runOnUiThread(new Runnable(){
             @Override
             public void run() {
-                turnText.setText("Current turn: \nPlayer "+Game.getInstance().currentTurn);
+                turnText.setText("Current turn: \nPlayer "+game.currentTurn);
                 opponentBoardView.redraw();
-                if(Game.getInstance().isGameOver()){
+                if(game.isGameOver()){
                     opponentBoardView.createGameOverDialog("All ships sunk! You Lose!");
                     opponentBoardView.gameOverDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
                         @Override

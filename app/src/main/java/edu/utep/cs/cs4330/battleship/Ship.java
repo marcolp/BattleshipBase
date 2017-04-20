@@ -71,6 +71,16 @@ public class Ship implements Serializable{
     }
 
     public void setLocation(ArrayList<Place> location) {
+        //Make the old places not have a place anymore
+        for(Place currentPlace : this.location){
+            currentPlace.setHit(false);
+        }
+
+        //Make the new places a ship
+        for(Place currentPlace : location){
+            currentPlace.setShip(true);
+        }
+
         this.location = location;
     }
 

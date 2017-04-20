@@ -210,7 +210,7 @@ public class MainActivity extends AppCompatActivity {
                 //TODO your background code
                 try{
                     //Connect to the connector socket
-                    Socket connectorSocket = new Socket("172.19.152.146", 8003);
+                    Socket connectorSocket = new Socket("192.168.1.75", 8003);
 
                     //To read from socket
                     BufferedReader in

@@ -12,7 +12,7 @@ public class ComputerPlayer extends Player{
 
     ComputerPlayer(int number){
         super(number);
-        strat = new Strategy(Game.getInstance().getPlayer().getMyBoard());
+        strat = new Strategy(Game.getInstance().getPlayer1().getMyBoard());
     }
 
     public boolean makeMove(){
