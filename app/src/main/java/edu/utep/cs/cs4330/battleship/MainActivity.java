@@ -11,11 +11,16 @@
 package edu.utep.cs.cs4330.battleship;
 
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
+import android.bluetooth.BluetoothServerSocket;
+import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.ConnectivityManager;
+import android.net.Network;
 import android.net.NetworkInfo;
 import android.net.nsd.NsdServiceInfo;
 import android.net.wifi.WifiInfo;
@@ -57,8 +62,12 @@ public class MainActivity extends AppCompatActivity {
     boolean connected;
     Socket opponentSocket;
     boolean client;
+    //BT Functionality
     BroadcastReceiver receiver;
     IntentFilter intentFilter;
+    BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
+    java.util.Set<BluetoothDevice> pairedDevices;
+    boolean canPlayBT = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -123,32 +132,107 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /* Bluetooth Functionality */
-    private boolean BTenabled() {
-        //checks if BT is on
+    private boolean turnOnBT() {
+        //turns on BT if off and a functionality on the device
         BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
-        if ( btAdapter!=null && btAdapter.isEnabled() )
-            return true;
-        return false;
+        if ( btAdapter==null ) return false; //no BT functionality on the phone
+        if ( btAdapter.isEnabled() ) return true; //BT is already on
+        startActivityForResult(new Intent(btAdapter.ACTION_REQUEST_ENABLE),2); //intent: settings
+        while ( btAdapter.getState()<btAdapter.STATE_ON ) ;
+        Log.d("MAINACT-BT","enabled BT");
+        return true;
     }
-
-    private void turnOnBT() {
-        //creates a window alert: user permission to turn on BT
-        Intent intent = new Intent(BluetoothAdapter.getDefaultAdapter().ACTION_REQUEST_ENABLE);
-        startActivity(intent);
+    private void makeDiscoverable() {
+        //makes the local device discoverable by bluetooth for 3 minutes (180 sec) (if user ok)
+        Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+        discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 180);
+        startActivity(discoverableIntent);
+        while ( !BluetoothAdapter.getDefaultAdapter().isDiscovering() ) ; //wait until in discovery
+        Log.d("MAINACT-BT","enabled BT discovery");
     }
-
     private void startBTGame() {
-        //activity (settings): connects to bluetooth
-        startActivity(new Intent(Settings.ACTION_BLUETOOTH_SETTINGS));
-        BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
-        if ( !true ) //todo device not connected to another phone
-            createTryAgainDialog("Bluetooth not connected!","Try Again","Cancel");
-        //String remote = btAdapter.getAddress(); // format 00:00:00:00:00:00
-        //UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
-        //BluetoothServerSocket btSS = btAdapter.listenUsingRfcommWithServiceRecord(remote,uuid);
-        //BluetoothDevice btDevice = btAdapter.getRemoteDevice(remote);
-        //BluetoothSocket btS = btDevice.createRfcommSocketToServiceRecord(SERIAL_UUID);
-        //btS.connect();
+        //turnOnBT();
+        //makeDiscoverable();
+//        if ( !btAdapter.isEnabled() )
+//            createBTRequestDialog("Connect to a Bluetooth device!","Okay","Cancel");
+//        else
+        startActivityForResult(new Intent(Settings.ACTION_BLUETOOTH_SETTINGS),5);
+        while ( btAdapter.getState()!=btAdapter.STATE_ON ) ;
+        if ( canPlayBT ) {
+            NetworkAdapter btNtAdapter = null;
+            BluetoothDevice r = findRemote();
+            if (r != null)
+                btNtAdapter = setUpConnection(r);
+            if (btNtAdapter != null) {
+                game.playerConnection = btNtAdapter;
+                if (r.getAddress().compareTo(btAdapter.getAddress()) > 0)
+                    game.userClient = true;
+            }
+            startGame();
+        }
+    }
+    @Override
+    protected void onActivityResult(int req, int res, Intent i) {
+        //returning from the intent to turn on bluetooth
+        if ( req==5 ) {
+            if ( res==RESULT_OK ) {
+                canPlayBT = true;
+            } else canPlayBT = false;
+        }
+    }
+    private BluetoothDevice findRemote() {
+        //find the bluetooth remote device
+        BluetoothDevice r = null;
+        Log.d("MAINACT-BT","have " +pairedDevices.size()+ " paired devices");
+        for ( BluetoothDevice d : pairedDevices ) {
+            Log.d("MAINACT-BT", "Paired with " +d.getName()+ " address: " +d.getAddress());
+            if ( btAdapter.getRemoteDevice(d.getAddress())==d )
+                r = d;
+        }
+        return r;
+    }
+    private NetworkAdapter setUpConnection(BluetoothDevice r) {
+        //help: http://stackoverflow.com/questions/36661680/cant-do-bluetooth-connection-to-remote-devices-android-6-0
+        //create the socket from the connection to this device
+        java.util.UUID uuid = java.util.UUID.randomUUID();
+        BluetoothSocket bS = null;
+        try {
+            bS = r.createRfcommSocketToServiceRecord(uuid);
+        } catch ( java.io.IOException e ) {
+            Log.d("MAINACT-BT","BluetoothSocket not created");
+            return null;
+        }
+        Log.d("MAINACT-BT", "BluetoothSocket created");
+        java.io.OutputStream oS;
+        try {
+            oS = bS.getOutputStream();
+        } catch ( java.io.IOException e ) {
+            Log.d("MAINACT-BT","OutputStream not created");
+            return null;
+        }
+        java.io.PrintStream pS = new java.io.PrintStream(oS);
+        Log.d("MAINACT-BT","NetworkAdapter created");
+        return new NetworkAdapter(bS,pS);
+    }
+    private void createBTRequestDialog(String msg, String pos, String neg) {
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder.setMessage(msg);
+        alertDialogBuilder.setPositiveButton(pos,
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface arg0, int arg1) {
+                        startActivity(new Intent(Settings.ACTION_BLUETOOTH_SETTINGS));
+                    }
+                });
+        alertDialogBuilder.setNegativeButton(neg,
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface arg0, int arg1) {
+                        //todo just close the window
+                    }
+                });
+        AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
     }
 
     /* Wifi Functionality */
@@ -279,7 +363,8 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
         AlertDialog alertDialog = alertDialogBuilder.create();
-        alertDialog.show();}
+        alertDialog.show();
+    }
 
     /* Starts the Battleship Game */
     private void startGame() {
