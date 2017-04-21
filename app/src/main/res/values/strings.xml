@@ -46,5 +46,6 @@
 
     <!-- Dialog -->
     <string name="newGameRequest">Start New Game?</string>
+    <string name="title_activity_aigame">AIGame</string>
 
 </resources>

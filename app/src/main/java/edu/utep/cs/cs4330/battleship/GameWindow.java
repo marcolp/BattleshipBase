@@ -501,7 +501,7 @@ public class GameWindow extends AppCompatActivity implements Observer {
                                     soundPool.play(1, 1, 1, 1, 0, 1.0f);
                                 }
 
-                                playerBoardView.createGameOverDialog("All ships sunk! You Win!");
+                                playerBoardView.createGameOverDialog("All ships sunk! You Loose!");
                                 playerBoardView.gameOverDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
                                     @Override
                                     public void onDismiss(DialogInterface dialog) {

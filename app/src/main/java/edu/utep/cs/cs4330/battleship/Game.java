@@ -70,7 +70,8 @@ public class Game implements Observable {
      * @return computerPlayer
      */
     public ComputerPlayer getComputerPlayer() {
-        if (player2.getClass().equals("ComputerPlayer")) {
+        String className = player2.getClass().getCanonicalName().toString();
+        if (className.equals("edu.utep.cs.cs4330.battleship.ComputerPlayer")) {
             return (ComputerPlayer) player2;
         } else {
             return null;
@@ -156,7 +157,8 @@ public class Game implements Observable {
         numShots++;
         if (!isGameOver() && !place.isShip()) {
             changeTurn();
-//            new Thread(this::makeComputerShot).start(); //FIXME No need to call this in a WIFI game
+            if(player2.getClass().getName().equals("edu.utep.cs.cs4330.battleship.ComputerPlayer"))
+                new Thread(this::makeComputerShot).start(); //No need to call this in a WIFI game
             return false;
         }
         return true;

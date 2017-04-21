@@ -25,6 +25,7 @@ public class DeployShipActivity extends AppCompatActivity{
     Board humanBoard;
     final int boardSize = 10;
     Spinner spinner;
+    private Game game;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,7 +34,9 @@ public class DeployShipActivity extends AppCompatActivity{
 
         setContentView(R.layout.activity_deploy_ship);
 
-        Game.getInstance().setNumShots(0);
+        game = Game.getInstance();
+
+        game.setNumShots(0);
 
         humanPlayer = new Player(1);
         humanBoard = humanPlayer.getMyBoard();
@@ -96,15 +99,28 @@ public class DeployShipActivity extends AppCompatActivity{
             }
         });
 
-        Game.getInstance().addPlayer1(humanPlayer);
+        game.addPlayer1(humanPlayer);
         humanPlayer.setPlayerNumber(1);
 
 //        ComputerPlayer opponent = new ComputerPlayer(2);
 //        opponent.placeShips();
 
-        Player opponent = new Player(2);
-        opponent.setPlayerNumber(2);
-        Game.getInstance().addPlayer2(opponent);
+        Intent intent = getIntent();
+        boolean aiGame = intent.getBooleanExtra("AI", false);
+
+        Player opponent;
+
+        if(aiGame) {
+            opponent = new ComputerPlayer(2);
+            game.addComputer((ComputerPlayer)opponent);
+        }
+
+        else {
+            opponent = new Player(2);
+            game.addPlayer2(opponent);
+
+        }
+
     }
 
     /**
@@ -196,7 +212,18 @@ public class DeployShipActivity extends AppCompatActivity{
      * @param view - The button pressed
      */
     public void placeShips(View view){
+        Intent prevIntent = getIntent();
+        boolean aiGame = prevIntent.getBooleanExtra("AI", false);
+
         Intent intent = new Intent(getBaseContext(), GameWindow.class);
+
+        if(aiGame)
+            intent = new Intent(getBaseContext(), AIGame.class);
+
+
+        else
+            intent = new Intent(getBaseContext(), GameWindow.class);
+
         startActivity(intent);
         finish();
     }

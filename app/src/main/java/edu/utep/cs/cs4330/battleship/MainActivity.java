@@ -289,6 +289,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void startAIGame(View view){
         Intent intent = new Intent(getApplicationContext(),DeployShipActivity.class);
+        intent.putExtra("AI", true);
         startActivity(intent);
     }
 
