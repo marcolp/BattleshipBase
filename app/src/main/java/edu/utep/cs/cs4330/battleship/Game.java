@@ -12,7 +12,7 @@ import java.util.Random;
  * Created by marcolopez on 2/28/17.
  */
 
-public class Game implements Observable{
+public class Game implements Observable {
 
 
     int numShots = 0; //integer representing the number of shots human player has made
@@ -28,75 +28,67 @@ public class Game implements Observable{
 
     public static final Game singletonGame = new Game();
 
-    public static Game getInstance(){
+    public static Game getInstance() {
         return singletonGame;
     }
 
 
-    public void addPlayer1(Player newPlayer){
-        if(player1 == null) {
-            player1 = newPlayer;
-        }
+    public void addPlayer1(Player newPlayer) {
+        player1 = newPlayer;
 
-        else{
-            player1 = newPlayer;
-        }
     }
 
-    public void addPlayer2(Player newPlayer2){
-        if(player2 == null){
-            player2 = newPlayer2;
-        }
+    public void addPlayer2(Player newPlayer2) {
+        player2 = newPlayer2;
 
-        else{
-            player2 = newPlayer2;
-        }
     }
-    public void addComputer(ComputerPlayer newComputer){
-        if(player2 == null){
+
+    public void addComputer(ComputerPlayer newComputer) {
+        if (player2 == null) {
             player2 = newComputer;
-        }
-
-        else{
+        } else {
             player2 = newComputer;
         }
     }
+
     /**
      * Get player1
      *
      * @return Player1
      */
-    public Player getPlayer1(){
+    public Player getPlayer1() {
         return player1;
     }
 
-    public Player getPlayer2(){
+    public Player getPlayer2() {
         return player2;
     }
+
     /**
      * Get computer player
+     *
      * @return computerPlayer
      */
-    public ComputerPlayer getComputerPlayer(){
-        if(player2.getClass().equals("ComputerPlayer")){
+    public ComputerPlayer getComputerPlayer() {
+        if (player2.getClass().equals("ComputerPlayer")) {
             return (ComputerPlayer) player2;
-        }
-
-        else{
+        } else {
             return null;
         }
     }
 
     /**
      * Creates a NetworkAdapter based on a TCP socket
+     *
      * @param wifiSocket
      */
-    public void initializeAdapter(Socket wifiSocket){
+    public void initializeAdapter(Socket wifiSocket) {
         playerConnection = new NetworkAdapter(wifiSocket);
     }
 
     /**
      * Return the NetworkAdapter
+     *
      * @return
      */
     public NetworkAdapter getPlayerConnection() {
@@ -108,18 +100,18 @@ public class Game implements Observable{
      *
      * @return int array containing encoded message of the player's ships
      */
-    public int [] makeFleetMessage(){
+    public int[] makeFleetMessage() {
         //Create new fleet message (4 things per ship, 5 ships)
-        int [] fleetMessage = new int [4*5];
+        int[] fleetMessage = new int[4 * 5];
 
         int index = 0;
 
         /**Traverse all the ships*/
-        for(Ship currentShip : Game.getInstance().player1.getMyShips()){
+        for (Ship currentShip : Game.getInstance().player1.getMyShips()) {
 
             //4 entries per ship
-            for(int i = 0; i < 4; i++){
-                switch(i){
+            for (int i = 0; i < 4; i++) {
+                switch (i) {
                     //Adding the size of the current ship
                     case 0:
                         fleetMessage[index] = currentShip.getSize();
@@ -138,7 +130,7 @@ public class Game implements Observable{
 
                     //Adding the direction of the current ship
                     case 3:
-                        if(currentShip.isOrientation())
+                        if (currentShip.isOrientation())
                             fleetMessage[index] = 1;
 
                         else
@@ -159,10 +151,10 @@ public class Game implements Observable{
      * @param place - location to shoot
      * @return - true if the player hit a ship, false otherwise
      */
-    public boolean makePlayerShot(Place place){
+    public boolean makePlayerShot(Place place) {
         place.setHit(true);
         numShots++;
-        if(!isGameOver() && !place.isShip()){
+        if (!isGameOver() && !place.isShip()) {
             changeTurn();
 //            new Thread(this::makeComputerShot).start(); //FIXME No need to call this in a WIFI game
             return false;
@@ -171,11 +163,10 @@ public class Game implements Observable{
     }
 
 
-
     private void makeComputerShot() {
         try {
             Thread.sleep(500);
-        }   catch (InterruptedException e) {
+        } catch (InterruptedException e) {
         }
         boolean hit = this.getComputerPlayer().makeMove();
         notifyObserver();
@@ -188,8 +179,8 @@ public class Game implements Observable{
         }
     }
 
-    public boolean isGameOver(){
-        if(player1.allSunk() || player2.allSunk())
+    public boolean isGameOver() {
+        if (player1.allSunk() || player2.allSunk())
             return true;
         else return false;
     }
@@ -200,34 +191,37 @@ public class Game implements Observable{
      * @param player
      * @return true if it is the player's true, false otherwise
      */
-    public boolean hasTurn(Player player){
-        if(player.getPlayerNumber() == currentTurn) return true;
+    public boolean hasTurn(Player player) {
+        if (player.getPlayerNumber() == currentTurn) return true;
         else return false;
     }
 
     /**
      * Change the turn to the other player
+     *
      * @return the current turn indicator
      */
-    public int changeTurn(){
-        if(currentTurn == 1) currentTurn = 2;
-        else if(currentTurn == 2) currentTurn = 1;
+    public int changeTurn() {
+        if (currentTurn == 1) currentTurn = 2;
+        else if (currentTurn == 2) currentTurn = 1;
         return currentTurn;
     }
 
     /**
      * Returns whether the user is the first player or not
+     *
      * @return
      */
-    public boolean getUserFirst(){
+    public boolean getUserFirst() {
         return userFirst;
     }
 
     /**
      * Randomly determines which player goes first
+     *
      * @return
      */
-    public boolean chooseFirstPlayer(){
+    public boolean chooseFirstPlayer() {
         Random rand = new Random();
 
         int n = rand.nextInt(2) + 1;
@@ -235,7 +229,7 @@ public class Game implements Observable{
         //If the user is the first player
         //Since the user is initialized as being first (see <initPlayers(int b, int s)>)
         //there is no need to change anything
-        if(n == 1) {
+        if (n == 1) {
             userFirst = true;
             return true;
         }
@@ -254,7 +248,7 @@ public class Game implements Observable{
         this.userClient = userClient;
     }
 
-    public boolean getUserClient(){
+    public boolean getUserClient() {
         return userClient;
     }
 
@@ -266,7 +260,9 @@ public class Game implements Observable{
         this.numShots = numShots;
     }
 
-    /**=================================Observer stuff======================================*/
+    /**
+     * =================================Observer stuff======================================
+     */
 
     private ArrayList<Observer> activities = new ArrayList<Observer>();
 
@@ -282,7 +278,7 @@ public class Game implements Observable{
 
     @Override
     public void notifyObserver() {
-        for(Observer current : activities){
+        for (Observer current : activities) {
             current.update();
         }
     }
