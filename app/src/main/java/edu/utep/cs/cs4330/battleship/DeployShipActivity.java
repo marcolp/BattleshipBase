@@ -11,7 +11,8 @@ import android.widget.Spinner;
 import android.widget.Toast;
 import java.util.ArrayList;
 
-/** Marco Lopez
+/**
+ * Marco Lopez
  * CS 5390 - Mobile Application Development
  * 2/14/2017
  *
@@ -265,7 +266,7 @@ public class DeployShipActivity extends AppCompatActivity{
             int col = currentPlace.getY();
 
             //If the new coordinates for the place go out of bounds return false and display a message
-            if(row + amount > humanBoard.getSize()-1 || row + amount < 0 || col + amount > humanBoard.getSize()-1 || col + amount < 0) {
+            if(row + amount > humanBoard.getSize()-1 || row + amount < 0 || col - amount > humanBoard.getSize()-1 || col - amount < 0) {
                 Toast.makeText(getApplicationContext(), "Invalid Rotation, out of board.", Toast.LENGTH_SHORT).show();
                 return false;
             }
@@ -273,7 +274,7 @@ public class DeployShipActivity extends AppCompatActivity{
             //Check to see if the new place has a colliding ship meaning it cannot be rotated that way.
             //Don't check when amount is 0 though because it would say that it collided with itself.
             else if(amount != 0) {
-                if (humanBoard.getPlace(row + amount, col + amount).isShip()) {
+                if (humanBoard.getPlace(row + amount, col - amount).isShip()) {
                     Toast.makeText(getApplicationContext(), "Invalid Rotation, other ship in the way.", Toast.LENGTH_SHORT).show();
                     return false;
                 }

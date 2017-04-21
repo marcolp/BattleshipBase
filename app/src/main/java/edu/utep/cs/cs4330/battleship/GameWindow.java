@@ -456,11 +456,16 @@ public class GameWindow extends AppCompatActivity implements Observer {
             startActivity(intent);
             finish();
         } else {
-            new AlertDialog.Builder(this)
-                    .setTitle("New game request")
-                    .setMessage("Your opponent rejected your request for a new game")
-                    .setIcon(android.R.drawable.ic_dialog_alert)
-                    .show();
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    new AlertDialog.Builder(GameWindow.this)
+                            .setTitle("New game request")
+                            .setMessage("Your opponent rejected your request for a new game")
+                            .setIcon(android.R.drawable.ic_dialog_alert)
+                            .show();
+                }
+            });
         }
     }
 
