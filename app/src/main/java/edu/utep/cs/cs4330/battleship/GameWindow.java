@@ -75,7 +75,7 @@ public class GameWindow extends AppCompatActivity implements Observer{
         opponentBoard = player2.myBoard;
 
         opponentBoardView = (BoardView) findViewById(R.id.opponentView);
-        opponentBoardView.setFirstActivity(false);
+        opponentBoardView.setOpponentBoard(false);
 
         //Views must have other player's board in order to indicate they are shooting at opponent
         opponentBoardView.setBoard(playerBoard);
@@ -83,7 +83,7 @@ public class GameWindow extends AppCompatActivity implements Observer{
         game.addObserver(this);
 
         playerBoardView.setBoard(opponentBoard);
-        playerBoardView.setFirstActivity(false);
+        playerBoardView.setOpponentBoard(true);
 
         configureSounds();
 
@@ -148,7 +148,12 @@ public class GameWindow extends AppCompatActivity implements Observer{
 
         game.chooseFirstPlayer();
 
-        if(!game.userFirst) game.getInstance().changeTurn();
+        if(!game.userFirst) {
+            game.getInstance().changeTurn();
+        }
+
+        turnText.setText("Current turn: \nPlayer "+game.currentTurn);
+
 
         //If we are the client then we send the fleet first
         if (game.getUserClient()) {
@@ -330,10 +335,10 @@ public class GameWindow extends AppCompatActivity implements Observer{
             //We send the opposite of our own game because if we are
             //first, then the opponent receives a message saying they are not
             //first (false)
-            netAdapter.writeTurn(!game.getFirstPlayer());
+            netAdapter.writeTurn(!game.getUserFirst());
 
             //If we do go first, then send the first shot
-            if (game.getFirstPlayer()) {
+            if (game.getUserFirst()) {
                 //TODO handle in the board listener????
             }
 
@@ -398,11 +403,11 @@ public class GameWindow extends AppCompatActivity implements Observer{
 
         //If it is 1 then we go first
         if(gotMessage.getX() == 1){
-
+            if(game.currentTurn != 1) game.changeTurn();
         }
 
         else{
-            game.changeTurn();
+            if(game.currentTurn != 2) game.changeTurn();
         }
     }
 
@@ -462,7 +467,7 @@ public class GameWindow extends AppCompatActivity implements Observer{
 //                                        boardView.updateShotNumber(0);
                             }
                             else {
-                                toast(String.format("Touched: %d, %d", x, y));
+                                toast(String.format("Opponent Sunk a ship at: %d, %d!", x, y));
                             }
                         }
                     }
@@ -528,7 +533,7 @@ public class GameWindow extends AppCompatActivity implements Observer{
 //                                        boardView.updateShotNumber(0);
                             }
                             else {
-                                toast(String.format("Touched: %d, %d", x, y));
+                                toast(String.format("You sunk a ship at: %d, %d!", x, y));
                             }
                         }
                     }

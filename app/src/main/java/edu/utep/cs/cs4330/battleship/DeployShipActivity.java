@@ -42,7 +42,7 @@ public class DeployShipActivity extends AppCompatActivity{
 
         humanBoardView = (BoardView) findViewById(R.id.boardView);
         humanBoardView.setBoard(humanBoard);
-        humanBoardView.setFirstActivity(true);
+        humanBoardView.setOpponentBoard(false);
         initialPlacing();
 
         spinner = (Spinner) findViewById(R.id.ship_spinner);
@@ -264,11 +264,12 @@ public class DeployShipActivity extends AppCompatActivity{
         if(!rotatingShip.isOrientation()){
             amount = -amount;
         }
+
         ArrayList<Place> newLocations = new ArrayList<>();
 
         for(Place currentPlace : rotatingShip.getLocation()){
             currentPlace.setShip(false);
-            Place newPlace = humanBoard.getPlace(currentPlace.getX() + amount, currentPlace.getY() + amount);
+            Place newPlace = humanBoard.getPlace(currentPlace.getX() + amount, currentPlace.getY() - amount);
             newPlace.setShip(true);
             newLocations.add(newPlace);
             if(rotatingShip.isOrientation())

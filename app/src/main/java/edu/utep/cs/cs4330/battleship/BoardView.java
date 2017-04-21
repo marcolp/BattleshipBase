@@ -181,14 +181,16 @@ public class BoardView extends View {
 
     /**=====================================DRAWING STUFF===========================================================*/
     /** Overridden here to draw a 2-D representation of the board. */
-    private Boolean firstActivity;
 
-    public Boolean getFirstActivity() {
-        return firstActivity;
+    //Boolean indicating whether this board belongs to opponent. Meaning that we don't display it's ships for the user to see.
+    private Boolean opponentBoard;
+
+    public Boolean getOpponentBoard() {
+        return opponentBoard;
     }
 
-    public void setFirstActivity(Boolean firstActivity) {
-        this.firstActivity = firstActivity;
+    public void setOpponentBoard(Boolean opponentBoard) {
+        this.opponentBoard = opponentBoard;
     }
 
     @Override
@@ -205,11 +207,11 @@ public class BoardView extends View {
     /** Draw all the places of the board. */
     private void drawPlaces(Canvas canvas) {
 
-        if(firstActivity){
+        if(!opponentBoard){
             drawShips(canvas);
         }
 
-        else {
+//        else {
 //         check the state of each place of the board and draw it.
             for (Place currentPlace : board.places()) {
                 boolean flag = currentPlace.isHit();
@@ -223,7 +225,7 @@ public class BoardView extends View {
                     canvas.drawRect((currentPlace.getX()) * lineGap() + 2, (currentPlace.getY()) * lineGap() + 2, (currentPlace.getX() + 1) * lineGap(), (currentPlace.getY() + 1) * lineGap(), toPaint);
                 }
             }
-        }
+//        }
     }
 
     /**

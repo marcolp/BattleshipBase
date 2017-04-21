@@ -219,7 +219,7 @@ public class Game implements Observable{
      * Returns whether the user is the first player or not
      * @return
      */
-    public boolean getFirstPlayer(){
+    public boolean getUserFirst(){
         return userFirst;
     }
 
