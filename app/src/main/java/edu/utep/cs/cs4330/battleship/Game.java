@@ -39,7 +39,7 @@ public class Game implements Observable{
         }
 
         else{
-//            player1 = newPlayer;
+            player1 = newPlayer;
         }
     }
 
@@ -49,7 +49,7 @@ public class Game implements Observable{
         }
 
         else{
-//            player2 = newPlayer2;
+            player2 = newPlayer2;
         }
     }
     public void addComputer(ComputerPlayer newComputer){

@@ -4,6 +4,9 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.media.SoundPool;
+import android.os.Handler;
+import android.os.Looper;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -18,13 +21,14 @@ import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 
-/** Marco Lopez
+/**
+ * Marco Lopez
  * CS 5390 - Mobile Application Development
  * 2/14/2017
- *
+ * <p>
  * This is the controller in the MVC
  */
-public class GameWindow extends AppCompatActivity implements Observer{
+public class GameWindow extends AppCompatActivity implements Observer {
 
     private TextView turnText;
     private TextView shotText;
@@ -48,12 +52,18 @@ public class GameWindow extends AppCompatActivity implements Observer{
     private Player player1;
     private Player player2;
 
+
+    private Handler handler;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         Log.d("Game Window", "This is the onCreate method");
         setContentView(R.layout.activity_game_window);
+
+        //UI Handler to use in background threads that require UI
+        handler = new Handler();
 
         final int boardSize = 10;
         soundOption = true;
@@ -103,12 +113,12 @@ public class GameWindow extends AppCompatActivity implements Observer{
 
                     case GAME:
                         receivedMessage = new Message(Message.MessageType.GAME, x, y, others);
-//                        processGame(receivedMessage);
+                        processGameMessage(receivedMessage);
                         break;
 
                     case GAME_ACK:
                         receivedMessage = new Message(Message.MessageType.GAME_ACK, x, y, others);
-//                        processGameACK(receivedMessage);
+                        processGameACK(receivedMessage);
                         break;
 
                     case FLEET:
@@ -148,11 +158,11 @@ public class GameWindow extends AppCompatActivity implements Observer{
 
         game.chooseFirstPlayer();
 
-        if(!game.userFirst) {
+        if (!game.userFirst) {
             game.getInstance().changeTurn();
         }
 
-        turnText.setText("Current turn: \nPlayer "+game.currentTurn);
+        turnText.setText("Current turn: \nPlayer " + game.currentTurn);
 
 
         //If we are the client then we send the fleet first
@@ -167,7 +177,7 @@ public class GameWindow extends AppCompatActivity implements Observer{
             @Override
             public void onTouch(int x, int y) {
 
-                player1HitPlace(x,y);
+                player1HitPlace(x, y);
 
             }
         });
@@ -240,7 +250,7 @@ public class GameWindow extends AppCompatActivity implements Observer{
                 }
 
                 //Replace previous ship with the new ship
-                opponentShips.set(shipCount , nextShip);
+                opponentShips.set(shipCount, nextShip);
                 shipCount++;
 
                 index = 1;
@@ -399,38 +409,81 @@ public class GameWindow extends AppCompatActivity implements Observer{
     /**
      * Called when we receive a TURN message
      */
-    private void processTurnMessage(Message gotMessage){
+    private void processTurnMessage(Message gotMessage) {
 
         //If it is 1 then we go first
-        if(gotMessage.getX() == 1){
-            if(game.currentTurn != 1) game.changeTurn();
-        }
-
-        else{
-            if(game.currentTurn != 2) game.changeTurn();
+        if (gotMessage.getX() == 1) {
+            if (game.currentTurn != 1) game.changeTurn();
+        } else {
+            if (game.currentTurn != 2) game.changeTurn();
         }
     }
 
-    private void player2HitPlace(int x, int y){
-        //Only allow show it if it the player's turn
-        if(game.hasTurn(player2)){
+    private void processGameMessage(Message gotMessage) {
 
-            turnText.setText("Current turn: \nPlayer "+game.currentTurn);
+        handler.post(new Runnable(){
+            @Override
+            public void run(){
+                AlertDialog.Builder builder = new AlertDialog.Builder(GameWindow.this);
+
+                builder.setTitle("New game request")
+                        .setMessage("Your opponent requested to start a new game. Accept?")
+                        .setPositiveButton("Accept", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                netAdapter.writeGameAck(true);
+                                Intent intent = new Intent(getBaseContext(), DeployShipActivity.class);
+                                startActivity(intent);
+                                finish();
+                            }
+                        })
+                        .setNegativeButton("Reject", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                netAdapter.writeGameAck(false);
+                            }
+                        })
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .show();
+            }
+        });
+    }
+
+    private void processGameACK(Message gotMessage) {
+
+        //Start a new game if the GAME message was accepted
+        if (gotMessage.getX() == 1) {
+            //Start a new game if they click continue
+            Intent intent = new Intent(getBaseContext(), DeployShipActivity.class);
+            startActivity(intent);
+            finish();
+        } else {
+            new AlertDialog.Builder(this)
+                    .setTitle("New game request")
+                    .setMessage("Your opponent rejected your request for a new game")
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .show();
+        }
+    }
+
+    private void player2HitPlace(int x, int y) {
+        //Only allow show it if it the player's turn
+        if (game.hasTurn(player2)) {
+
+            turnText.setText("Current turn: \nPlayer " + game.currentTurn);
             Place placeShot = playerBoard.getPlace(x, y);
 
             //If the player shoots a place already shot then do nothing.
-            if(!placeShot.isHit()) {
+            if (!placeShot.isHit()) {
 
                 /**Make a shot on the board*/
                 boolean hitShip = game.makePlayerShot(placeShot);
                 String playerTurn = "";
-                playerTurn = "Current turn: \nPlayer "+game.currentTurn;
+                playerTurn = "Current turn: \nPlayer " + game.currentTurn;
                 turnText.setText(playerTurn);
 
-                shotText.setText("Number of shots: "+game.numShots);
+                shotText.setText("Number of shots: " + game.numShots);
 
                 //If sound option is on play sounds
-                if(soundOption) {
+                if (soundOption) {
 
                     //If it hit a ship play a sound
                     if (hitShip) {
@@ -444,7 +497,7 @@ public class GameWindow extends AppCompatActivity implements Observer{
                             soundPool.play(3, 1, 1, 1, 0, 1.0f);
 
                             if (game.isGameOver()) {
-                                if(soundOption) {
+                                if (soundOption) {
                                     soundPool.play(1, 1, 1, 1, 0, 1.0f);
                                 }
 
@@ -465,8 +518,7 @@ public class GameWindow extends AppCompatActivity implements Observer{
 //                                        boardView.setBoard(board);
 //                                        boardView.redraw();
 //                                        boardView.updateShotNumber(0);
-                            }
-                            else {
+                            } else {
                                 toast(String.format("Opponent Sunk a ship at: %d, %d!", x, y));
                             }
                         }
@@ -476,28 +528,28 @@ public class GameWindow extends AppCompatActivity implements Observer{
         }
     }
 
-    private void player1HitPlace(int x, int y){
+    private void player1HitPlace(int x, int y) {
         //Only allow show it if it the player's turn
-        if(game.hasTurn(player1)){
+        if (game.hasTurn(player1)) {
 
-            turnText.setText("Current turn: \nPlayer "+game.currentTurn);
+            turnText.setText("Current turn: \nPlayer " + game.currentTurn);
             Place placeShot = opponentBoard.getPlace(x, y);
 
             //If the player shoots a place already shot then do nothing.
-            if(!placeShot.isHit()) {
+            if (!placeShot.isHit()) {
 
-                netAdapter.writeShot(x,y);
+                netAdapter.writeShot(x, y);
 
                 /**Make a shot on the board*/
                 boolean hitShip = game.makePlayerShot(placeShot);
                 String playerTurn = "";
-                playerTurn = "Current turn: \nPlayer "+game.currentTurn;
+                playerTurn = "Current turn: \nPlayer " + game.currentTurn;
                 turnText.setText(playerTurn);
 
-                shotText.setText("Number of shots: "+game.numShots);
+                shotText.setText("Number of shots: " + game.numShots);
 
                 //If sound option is on play sounds
-                if(soundOption) {
+                if (soundOption) {
 
                     //If it hit a ship play a sound
                     if (hitShip) {
@@ -510,7 +562,7 @@ public class GameWindow extends AppCompatActivity implements Observer{
                             soundPool.play(3, 1, 1, 1, 0, 1.0f);
 
                             if (game.isGameOver()) {
-                                if(soundOption) {
+                                if (soundOption) {
                                     soundPool.play(1, 1, 1, 1, 0, 1.0f);
                                 }
 
@@ -531,8 +583,7 @@ public class GameWindow extends AppCompatActivity implements Observer{
 //                                        boardView.setBoard(board);
 //                                        boardView.redraw();
 //                                        boardView.updateShotNumber(0);
-                            }
-                            else {
+                            } else {
                                 toast(String.format("You sunk a ship at: %d, %d!", x, y));
                             }
                         }
@@ -542,15 +593,17 @@ public class GameWindow extends AppCompatActivity implements Observer{
         }
     }
 
-    private void configureSounds(){
+    private void configureSounds() {
         soundPool = new SoundPool(1, AudioManager.STREAM_MUSIC, 0);
         soundMap = new SparseIntArray(3);
-        soundMap.put(1, soundPool.load(this, R.raw.game_over_win,1));
-        soundMap.put(2, soundPool.load(this, R.raw.cannon_shot,1));
-        soundMap.put(3, soundPool.load(this, R.raw.ship_sink,1));
+        soundMap.put(1, soundPool.load(this, R.raw.game_over_win, 1));
+        soundMap.put(2, soundPool.load(this, R.raw.cannon_shot, 1));
+        soundMap.put(3, soundPool.load(this, R.raw.ship_sink, 1));
     }
 
-    /** Show a toast message. */
+    /**
+     * Show a toast message.
+     */
     protected void toast(String msg) {
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
     }
@@ -605,13 +658,11 @@ public class GameWindow extends AppCompatActivity implements Observer{
      */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if(item.getTitle().equals("Sound OFF")){
+        if (item.getTitle().equals("Sound OFF")) {
             item.setTitle("Sound ON");
             item.setIcon(R.drawable.sound_optoin_off);
             soundOption = false;
-        }
-
-        else if(item.getTitle().equals("Sound ON")){
+        } else if (item.getTitle().equals("Sound ON")) {
             item.setTitle("Sound OFF");
             item.setIcon(R.drawable.sound_option_on);
             soundOption = true;
@@ -619,59 +670,80 @@ public class GameWindow extends AppCompatActivity implements Observer{
 
         return super.onOptionsItemSelected(item);
     }
+
     @Override
-    protected void onPause(){
+    protected void onPause() {
         Log.d("Main Activity", "This is the onPause method");
         super.onPause();
 
     }
 
     @Override
-    protected void onResume(){
+    protected void onResume() {
         Log.d("Main Activity", "This is the onResume method");
         super.onResume();
     }
 
     @Override
-    protected void onStart(){
+    protected void onStart() {
         Log.d("Main Activity", "This is the onStart method");
         super.onStart();
 
     }
 
     @Override
-    protected void onStop(){
+    protected void onStop() {
         Log.d("Main Activity", "This is the onStop method");
         super.onStop();
     }
 
     @Override
-    protected void onRestart(){
+    protected void onRestart() {
         Log.d("Main Activity", "This is the onRestart method");
         super.onRestart();
     }
 
     @Override
-    protected void onDestroy(){
+    protected void onDestroy() {
         Log.d("Main Activity", "This is the onDestroy method");
         super.onDestroy();
     }
 
-    public void newGame(View view){
-        Intent intent = new Intent(getBaseContext(), MainActivity.class);
-        startActivity(intent);
-        finish();
+    public void newGame(View view) {
+
+        new AlertDialog.Builder(this)
+                .setTitle("New game")
+                .setMessage("Are you sure you want to start a new game? All progress will be lost. Continue?")
+                .setPositiveButton("Continue", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        //Start a new game if they click continue
+                        netAdapter.writeGame();
+
+//                        Intent intent = new Intent(getBaseContext(), DeployShipActivity.class);
+//                        startActivity(intent);
+//                        finish();
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // do nothing
+                    }
+                })
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .show();
     }
 
-    /**=======================Observer stuff===============================*/
+    /**
+     * =======================Observer stuff===============================
+     */
     @Override
     public void update() {
-        runOnUiThread(new Runnable(){
+        runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                turnText.setText("Current turn: \nPlayer "+game.currentTurn);
+                turnText.setText("Current turn: \nPlayer " + game.currentTurn);
                 opponentBoardView.redraw();
-                if(game.isGameOver()){
+                if (game.isGameOver()) {
                     opponentBoardView.createGameOverDialog("All ships sunk! You Lose!");
                     opponentBoardView.gameOverDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
                         @Override
